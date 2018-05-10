@@ -1,0 +1,1419 @@
+// DataManager.cpp : implementation file
+//
+
+#include "stdafx.h"
+#include "DataManager.h"
+#include "resource.h"
+#include "EarthMatrixFunctions.h"
+#include "IViewer3D.h"
+#include <osg/Material>
+#include <osg/Shape>
+#include <osg/ShapeDrawable>
+#include <osgText/Text3D>
+#include "INodeEvents.h"
+#include "x3py/observer/observerobject.h"
+#include "osg/Group"
+#include "osgDB/FileNameUtils"
+#include "osgDB/FileUtils"
+#include "osg/LineWidth"
+#include "osg/osgUtil/PlaneIntersector"
+#include "DlgSearchAdv.h"
+
+// CDataManager
+IMPLEMENT_DYNAMIC(CDataManager, CWnd)
+
+CDataManager* m_pDM;
+
+CDataManager::CDataManager()
+{
+    std::wstring app = x3::a2w(_getClassName());
+    Name(GETSTRINGW(app.c_str(), L"Name", L"场景树"));
+    Caption(GETSTRINGW(app.c_str(), L"Caption", L"数据管理"));
+    Category(GETSTRINGW(app.c_str(), L"Category", L"主页"));
+    Tooltip(GETSTRINGW(app.c_str(), L"Tooltip", L"显示或隐藏场景树窗口"));
+    Description(GETSTRINGW(app.c_str(), L"Description", L"显示或隐藏场景树窗口"));
+    BitmapName(GETSTRINGW(app.c_str(), L"BitmapName", L"TreeWindow"));
+}
+
+CDataManager::~CDataManager()
+{
+    UnInitialize();
+}
+
+BEGIN_MESSAGE_MAP(CDataManager, CWnd)
+    ON_WM_CREATE()
+    ON_WM_SIZE()
+    ON_WM_DESTROY()
+    ON_WM_PAINT()
+    ON_WM_SETFOCUS()
+    ON_NOTIFY(NM_DBLCLK, 4, &CDataManager::OnNMDblclk)
+    ON_NOTIFY(NM_CLICK, 4, &CDataManager::OnNMClickDataManager)
+    ON_NOTIFY(NM_RCLICK, 4, &CDataManager::OnRBClick)
+    ON_WM_RBUTTONUP()
+    ON_COMMAND(ID_DELLAYER, &CDataManager::OnDellayer)
+    ON_COMMAND(ID_SET_DEFLAYER, &CDataManager::OnSetDefLayer)
+    ON_EN_CHANGE(ID_KEY, &CDataManager::OnKeyChangeEditName)
+    ON_NOTIFY(NM_CLICK, ID_SEARCH_LIST, &CDataManager::OnNMClickList)
+	ON_BN_CLICKED(ID_SEARCH_BUTTON, &CDataManager::OnBnClickedButtonSearch)
+	ON_BN_CLICKED(ID_SEARCH_BUTTON_ADV, &CDataManager::OnBnClickedButtonSearchAdv)
+END_MESSAGE_MAP()
+
+
+// CDataManager 消息处理程序
+bool CDataManager::Initialize()
+{
+	dStep = 1;
+	bFindedStart = false;
+	bFindedEnd = false;
+	dStartHeight = 0;
+	dEndHeight = 200;
+	m_pAttInfoWin = NULL;
+	bInterDel = false;
+    return true;
+}
+
+bool CDataManager::UnInitialize()
+{
+    if( ::IsWindow(GetSafeHwnd()) )
+        DestroyWindow();
+
+    return true;
+}
+
+bool CDataManager::SetBuddy(x3::IObject* val)
+{
+    x3::Object<IViewer3D> spViewer3D(val);
+    if( !spViewer3D.valid() )
+        return false;
+
+    if( m_spBuddy == spViewer3D )
+        return true;
+
+    m_spBuddy = spViewer3D;
+    if( spViewer3D->getViewer() == NULL )
+        return false;
+
+    m_spViewer3D = (IViewer3D*)val;
+
+	m_pDM = this;
+
+    return true;
+}
+
+bool CDataManager::createWnd(size_t hParent, long id)
+{
+    if( hParent == NULL || !::IsWindow((HWND)hParent) )
+        return false;
+
+    CRect rect;
+    rect.SetRectEmpty();
+    return Create(NULL, _T(""), WS_CHILD | WS_VISIBLE, rect, CWnd::FromHandle((HWND)hParent), id);
+}
+
+bool CDataManager::setParent(size_t hWnd)
+{
+    if( hWnd == NULL || !::IsWindow((HWND)hWnd) )
+        return false;
+
+    CWnd::SetParent(CWnd::FromHandle((HWND)hWnd));
+    return true;
+}
+
+int CDataManager::OnCreate(LPCREATESTRUCT lpCreateStruct)
+{
+    AFX_MANAGE_STATE_EX
+    if (CWnd::OnCreate(lpCreateStruct) == -1)
+        return -1;
+
+    // TODO:  在此添加您专用的创建代码
+    CRect rectDummy;
+    rectDummy.SetRectEmpty();
+
+    // 创建视图:
+    const DWORD dwViewStyle = WS_CHILD | WS_VISIBLE | WS_TABSTOP |
+                              TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS | TVS_FULLROWSELECT | TVS_CHECKBOXES | TVS_SHOWSELALWAYS;
+    if (!m_wndTreeCtrl.Create(dwViewStyle, rectDummy, this, 4))
+    {
+        TRACE0("未能创建文件视图\n");
+        return -1;      // 未能创建
+    }
+
+    m_cKey.Create( WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER | WS_CLIPCHILDREN , CRect(10, 10, 100, 30), this, ID_KEY );
+    m_cList.Create( WS_CHILD | WS_VISIBLE | WS_TABSTOP | WS_BORDER | LVS_REPORT | LVS_SHOWSELALWAYS | WS_CLIPCHILDREN , CRect(10, 10, 100, 30), this, ID_SEARCH_LIST );
+	m_cSearch.Create(_T("搜索"), WS_VISIBLE | WS_CLIPCHILDREN , CRect(10, 10, 100, 30),this, ID_SEARCH_BUTTON);
+	m_cSearchAdv.Create(_T("高级"), WS_VISIBLE | WS_CLIPCHILDREN , CRect(10, 10, 100, 30),this, ID_SEARCH_BUTTON_ADV);
+
+    m_cList.InsertColumn (0, _T("字段名"), LVCFMT_LEFT, 80);
+    m_cList.InsertColumn (1, _T("字段值"), LVCFMT_LEFT, 150);
+
+    m_cList.SendMessage (LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
+
+    HFONT hFont = (HFONT)::GetStockObject(SYSTEM_FIXED_FONT);
+    CFont* pFont = CFont::FromHandle(hFont);
+    m_cKey.SetFont(pFont);
+	m_cSearch.SetFont(pFont);
+	m_cSearchAdv.SetFont(pFont);
+
+    m_wndToolBar.Create(this, AFX_DEFAULT_TOOLBAR_STYLE, IDR_TOOLBAR);
+    m_wndToolBar.LoadToolBar(IDR_TOOLBAR, 0, 0, TRUE /* 已锁定*/);
+
+    m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() | CBRS_TOOLTIPS | CBRS_FLYBY);
+    m_wndToolBar.SetPaneStyle(m_wndToolBar.GetPaneStyle() & ~(CBRS_GRIPPER | CBRS_SIZE_DYNAMIC | CBRS_BORDER_TOP | CBRS_BORDER_BOTTOM | CBRS_BORDER_LEFT | CBRS_BORDER_RIGHT));
+    m_wndToolBar.SetOwner(this);
+
+    // 所有命令将通过此控件路由，而不是通过主框架路由:
+    m_wndToolBar.SetRouteCommandsViaFrame(FALSE);
+
+    AdjustLayout();
+
+    registerHandlers();
+    return 0;
+}
+
+void CDataManager::OnSize(UINT nType, int cx, int cy)
+{
+    CWnd::OnSize(nType, cx, cy);
+
+    // TODO: 在此处添加消息处理程序代码
+    AdjustLayout();
+}
+
+void CDataManager::OnDestroy()
+{
+    unregisterHandlers();
+
+    CWnd::OnDestroy();
+
+    // TODO: 在此处添加消息处理程序代码
+}
+
+void CDataManager::AdjustLayout()
+{
+    if ( !::IsWindow(GetSafeHwnd()) )
+        return;
+
+    CRect rectClient;
+    GetClientRect(rectClient);
+
+    int cyTlb = m_wndToolBar.CalcFixedLayout(FALSE, TRUE).cy;
+    int nTreeHeight = 300;
+    int nKeyHeight = 24;
+
+    m_wndToolBar.SetWindowPos(NULL, rectClient.left, rectClient.top, rectClient.Width(), cyTlb, SWP_NOACTIVATE | SWP_NOZORDER);
+    m_wndTreeCtrl.SetWindowPos(NULL, rectClient.left + 1, rectClient.top + cyTlb + 1, rectClient.Width() - 2, nTreeHeight, SWP_NOACTIVATE | SWP_NOZORDER);
+    m_cKey.SetWindowPos(NULL, rectClient.left + 1, rectClient.top + 4 + cyTlb + nTreeHeight, rectClient.Width() - 1 - 60 - 60 - 1, nKeyHeight, SWP_NOACTIVATE | SWP_NOZORDER);
+    m_cList.SetWindowPos(NULL, rectClient.left + 1, rectClient.top + 6 + cyTlb + nKeyHeight + nTreeHeight, rectClient.Width() - 1, rectClient.Height() - 8 - cyTlb - nKeyHeight - nTreeHeight, SWP_NOACTIVATE | SWP_NOZORDER);
+	m_cSearch.SetWindowPos(NULL, rectClient.left + 4 + rectClient.Width() - 60 - 60, rectClient.top + 4 + cyTlb + nTreeHeight, 60 - 4, nKeyHeight, SWP_NOACTIVATE | SWP_NOZORDER);
+	m_cSearchAdv.SetWindowPos(NULL, rectClient.left + 4 + rectClient.Width() - 60, rectClient.top + 4 + cyTlb + nTreeHeight, 60 - 4, nKeyHeight, SWP_NOACTIVATE | SWP_NOZORDER);
+}
+
+QMemDC::QMemDC(CDC* dc,CRect rc)
+{
+	dcSrc = dc;
+	rect  = rc;
+	// 创建内存DC
+	CreateCompatibleDC(dc);
+	bmp.CreateCompatibleBitmap(dc,rc.Width(),rc.Height());
+	SelectObject(bmp);
+}
+
+void QMemDC::Apply()
+{
+	// 将内存DC绘制到设备DC上
+	dcSrc->BitBlt(rect.left,rect.top,rect.Width(),rect.Height(),this,0,0,SRCCOPY);
+}
+
+void CDataManager::OnPaint()
+{
+    CPaintDC dc(this); // device context for painting
+    // TODO: 在此处添加消息处理程序代码
+    // 不为绘图消息调用 __super::OnPaint()
+
+	CRect rc;
+	GetClientRect(&rc);
+
+	// 采用双缓存，防止闪烁
+	QMemDC mdc(&dc,rc);
+	COLORREF bkgnd = RGB(255,255,255);
+	mdc.FillSolidRect(&rc,bkgnd);
+	mdc.Apply();
+
+	CRect rectTree;
+	m_wndTreeCtrl.GetWindowRect(rectTree);
+	ScreenToClient(rectTree);
+
+	rectTree.InflateRect(1, 1);
+	dc.Draw3dRect(rectTree, ::GetSysColor(COLOR_3DSHADOW), ::GetSysColor(COLOR_3DSHADOW));
+}
+
+void CDataManager::OnSetFocus(CWnd* pOldWnd)
+{
+    CWnd::OnSetFocus(pOldWnd);
+
+    // TODO: 在此处添加消息处理程序代码
+    if( ::IsWindow(m_wndTreeCtrl.GetSafeHwnd()) )
+        m_wndTreeCtrl.SetFocus();
+}
+
+//////////////////////////////////////////////////////////////////////////
+// CDataManagerObserver
+CDataManagerObserver::CDataManagerObserver()
+{
+    m_bRegister = false;
+}
+
+CDataManagerObserver::~CDataManagerObserver()
+{
+    unregisterHandlers();
+}
+
+void CDataManagerObserver::registerHandlers()
+{
+    if( m_bRegister )
+        return;
+
+    X3_REGISTER_OBSERVER_OBJECT(EventNodeAdd, &CDataManagerObserver::OnNodeAdd);
+    X3_REGISTER_OBSERVER_OBJECT(EventNodeRemove, &CDataManagerObserver::OnNodeRemove);
+    X3_REGISTER_OBSERVER_OBJECT(EventNodeChanged, &CDataManagerObserver::OnNodeChange);
+	X3_REGISTER_OBSERVER_OBJECT(EventNodeSelected, &CDataManagerObserver::OnNodeSelected);
+	X3_REGISTER_OBSERVER_OBJECT(EventSetDefLayer, &CDataManagerObserver::OnSetDefLayer2);
+    X3_REGISTER_OBSERVER_OBJECT(EventProjectOpen, &CDataManagerObserver::OnProjectOpen);
+    m_bRegister = true;
+}
+
+void CDataManagerObserver::unregisterHandlers()
+{
+    if( !m_bRegister )
+        return;
+
+    x3::unregisterObserver(this);
+}
+//////////////////////////////////////////////////////////////////////////
+
+void CDataManager::OnNodeAdd(x3::IObject* pBuddy, osg::Node* pNode, osg::Node* pParentNode, std::string filename)
+{
+    AFX_MANAGE_STATE_EX
+    USES_CONVERSION;
+    if( pNode == nullptr || pBuddy == nullptr )
+        return;
+
+    HTREEITEM item = m_wndTreeCtrl.InsertItem(A2CT(pNode->getName().c_str()));
+	m_wndTreeCtrl.SetCheck(item);
+	if (CString(pNode->getName().c_str()) == m_sDefLayer)
+	{
+		m_wndTreeCtrl.SetItemBold(item, true);
+	}
+
+
+    x3::Object<IViewer3D> spViewer3D(pBuddy);
+    if( !spViewer3D.valid() )
+        return;
+
+	//////////////////////////////////////////////////////////////////////////
+	CStringArray* aLayers = spViewer3D->GetLayersArray();
+	CStringArray* aLayersCheck = spViewer3D->GetLayerCheck();
+	for (int i=0; i < aLayers->GetCount();i++)
+	{
+		CString sL = aLayers->GetAt(i);
+		std::string fp = T2A(sL);
+		std::string filename = osgDB::getStrippedName(fp);
+		if (filename == pNode->getName())
+		{
+			CString sCheck = aLayersCheck->GetAt(i);
+			if (sCheck == L"1")
+			{
+				m_wndTreeCtrl.SetCheck(item);
+			}
+			else
+			{
+				m_wndTreeCtrl.SetCheck(item, FALSE);
+				pNode->setNodeMask(0);
+			}
+		}
+	}
+	//////////////////////////////////////////////////////////////////////////
+
+    const osg::BoundingSphere& bs = pNode->getBound();
+    if (fabs(bs.radius()) <= DBL_EPSILON) // invalid node
+        return;
+
+    osg::Vec3d v3f = bs.center();
+    osg::Vec3d v3dOut;
+
+    std::string FilePath = filename.substr( 0, filename.find_last_of( '\\' ) );
+    std::string FileNameEx = filename.substr(filename.find_last_of( '\\' ) + 1);
+    std::string FileNameNoEx = FileNameEx.substr(0, FileNameEx.find_last_of( '.' ));
+
+    const SpatialReference* epsg2382;
+    std::string ProjFile = FilePath + "\\" + FileNameNoEx + ".prj";
+
+    if (osgDB::fileExists(ProjFile))
+    {
+        std::string sContent = spViewer3D->GetFileContent(ProjFile);
+        epsg2382 = SpatialReference::create(sContent);
+
+    }
+    else
+        epsg2382 = SpatialReference::create("wgs84");
+
+#ifdef _2D
+#else
+    const SpatialReference* wgs84 = spViewer3D->getMapNode()->getMapSRS();
+    epsg2382->transform(v3f, wgs84, v3dOut);
+#endif
+
+
+    CString sData;
+    sData.Format(L"%f,%f", v3dOut.x(), v3dOut.y());
+
+    //m_wndTreeCtrl.SetItemData(item, (DWORD_PTR)sData.AllocSysString());
+    m_wndTreeCtrl.SetItemData(item, (DWORD_PTR)pNode);
+}
+
+HTREEITEM CDataManager::FindItem(HTREEITEM item, CString strText)
+{
+	HTREEITEM hFind;
+	if (item == NULL)
+	{
+		return NULL;
+	}
+	while(item != NULL)
+	{
+		if (m_wndTreeCtrl.GetItemText(item) == strText)
+		{
+			return item;
+		}
+		if (m_wndTreeCtrl.ItemHasChildren(item))
+		{
+			item = m_wndTreeCtrl.GetChildItem(item);
+			hFind = FindItem(item, strText);
+			if (hFind)
+			{
+				return hFind;
+			}
+			else
+			{
+				item = m_wndTreeCtrl.GetNextSiblingItem(m_wndTreeCtrl.GetParentItem(item));
+			}
+		}
+		else
+		{
+			item = m_wndTreeCtrl.GetNextSiblingItem(item);
+			if (item == NULL)
+			{
+				return NULL;
+			}
+		}
+	}
+	return item;
+}
+
+void CDataManager::OnNodeRemove(x3::IObject* pBuddy, osg::Node* pNode, osg::Node* pParentNode)
+{
+	if (bInterDel)
+	{
+		return;
+	}
+
+    if( pNode == NULL || pBuddy == NULL )
+        return;
+
+
+    HTREEITEM hRoot = m_wndTreeCtrl.GetRootItem();
+    HTREEITEM hFind = FindItem(hRoot, CString(pNode->getName().c_str()));
+
+    m_wndTreeCtrl.DeleteItem(hFind);
+}
+
+void CDataManager::OnNodeChange(x3::IObject* pBuddy, osg::Node* pNode)
+{
+}
+
+void CDataManager::OnNodeSelected(x3::IObject* pBuddy, osg::Node* pNode)
+{
+}
+
+void CDataManager::OnNMDblclk(NMHDR *pNMHDR, LRESULT *pResult)
+{
+    /*
+    HTREEITEM hCurSel = m_wndTreeCtrl.GetSelectedItem();
+    CString s = (BSTR)m_wndTreeCtrl.GetItemData(hCurSel);
+
+    double lon = _tstof(s.Left(s.Find(L",")));
+    double lat = _tstof(s.Right(s.GetLength() - s.Find(L",") - 1));
+
+    x3::Object<IViewer3D> spViewer3D(m_spBuddy);
+    if( !spViewer3D.valid() )
+    	return;
+
+    spViewer3D->FlyToViewport(lon,lat, 100);
+    */
+    HTREEITEM hCurSel = m_wndTreeCtrl.GetSelectedItem();
+    osg::Node* pNode = (osg::Node*)m_wndTreeCtrl.GetItemData(hCurSel);
+
+    x3::Object<IViewer3D> spViewer3D(m_spBuddy);
+    if( !spViewer3D.valid() )
+        return;
+
+    const osg::BoundingSphere& bs = pNode->getBound();
+    if (fabs(bs.radius()) <= DBL_EPSILON) // invalid node
+        return;
+
+    osg::Vec3d v3f = bs.center();
+#ifdef _2D
+    spViewer3D->CenterNode(pNode, bs.radius());
+#else
+    spViewer3D->FlyToViewport(v3f.x(), v3f.y(), 100);
+#endif
+
+    *pResult = 0;
+}
+void CDataManager::OnNMClickDataManager(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	CPoint point;
+	UINT uFlag;
+	bool bCheck = true;
+	GetCursorPos(&point);
+	m_wndTreeCtrl.ScreenToClient(&point);
+	HTREEITEM hTree = m_wndTreeCtrl.HitTest(point, &uFlag);
+	if((TVHT_NOWHERE & uFlag))
+	{
+		return;
+	}
+
+	if (hTree && (TVHT_ONITEMSTATEICON & uFlag))
+	{
+		m_wndTreeCtrl.SelectItem(hTree);
+		CString temp = m_wndTreeCtrl.GetItemText(hTree) + L"\r\n";
+		TRACE(temp);
+		bCheck = m_wndTreeCtrl.GetCheck(hTree);
+
+		if (bCheck)
+		{
+			TRACE("取消选择");
+			osg::Node* pNode = (osg::Node*)m_wndTreeCtrl.GetItemData(hTree);
+			pNode->setNodeMask(0);
+			SetLayerCheck(m_wndTreeCtrl.GetItemText(hTree), false);
+		}
+		else
+		{
+			TRACE("选中");
+			osg::Node* pNode = (osg::Node*)m_wndTreeCtrl.GetItemData(hTree);
+			pNode->setNodeMask(1);
+			SetLayerCheck(m_wndTreeCtrl.GetItemText(hTree), true);
+		}
+
+		SetChildCheck(hTree, !bCheck);
+		SetParentCheck(hTree, bCheck);
+	}
+
+	*pResult = 0;
+}
+
+void CDataManager::SetLayerCheck(CString sName, bool bCheck)
+{
+	USES_CONVERSION;
+	//////////////////////////////////////////////////////////////////////////
+	CStringArray* aLayers = m_spViewer3D->GetLayersArray();
+	CStringArray* aLayersCheck = m_spViewer3D->GetLayerCheck();
+	for (int i=0; i < aLayers->GetCount();i++)
+	{
+		CString sL = aLayers->GetAt(i);
+		std::string fp = T2A(sL);
+		std::string filename = osgDB::getStrippedName(fp);
+		if (CString(filename.c_str()) == sName)
+		{
+			if (bCheck)
+			{
+				aLayersCheck->SetAt(i,L"1");
+			}
+			else
+				aLayersCheck->SetAt(i,L"0");
+		}
+	}
+	//////////////////////////////////////////////////////////////////////////
+}
+
+void CDataManager::SetChildCheck(HTREEITEM hTree, BOOL bCheck)
+{
+    m_wndTreeCtrl.Expand(hTree, TVE_EXPAND);
+    hTree = m_wndTreeCtrl.GetChildItem(hTree);
+    while (hTree)
+    {
+        m_wndTreeCtrl.SetCheck(hTree, bCheck);
+        SetChildCheck(hTree, bCheck);
+        hTree = m_wndTreeCtrl.GetNextSiblingItem(hTree);
+    }
+}
+
+void CDataManager::SetParentCheck(HTREEITEM hTree, BOOL bCheck)
+{
+    HTREEITEM hParent = m_wndTreeCtrl.GetParentItem(hTree);
+    if (hParent)
+    {
+        HTREEITEM hChild = m_wndTreeCtrl.GetChildItem(hParent);
+        while (hChild)
+        {
+            if (hChild == hTree)
+            {
+                hChild = m_wndTreeCtrl.GetNextSiblingItem(hChild);
+                continue;
+            }
+            BOOL bflag = m_wndTreeCtrl.GetCheck(hChild);
+
+            if (bCheck == bflag)
+            {
+                return;
+            }
+            hChild = m_wndTreeCtrl.GetNextSiblingItem(hChild);
+        }
+        m_wndTreeCtrl.SetCheck(hParent, !bCheck);
+        SetParentCheck(hParent, bCheck);
+    }
+}
+
+CPoint point;
+void CDataManager::OnRBClick(NMHDR* pNMHDR, LRESULT* pResult)
+{
+    GetCursorPos(&point);
+    CPoint pointInTree = point;
+    m_wndTreeCtrl.ScreenToClient(&pointInTree);
+
+    HTREEITEM item;
+    UINT flag = TVHT_ONITEM;
+    item = m_wndTreeCtrl.HitTest(pointInTree, &flag);
+    if(item != NULL)
+    {
+        CMenu m_Menu, *p_Menu = NULL ;
+        {
+            m_Menu.LoadMenu( IDR_MENU1) ;
+            p_Menu = (CMenu*) m_Menu.GetSubMenu(0);
+            if( p_Menu != NULL)
+                p_Menu->TrackPopupMenu( TPM_RIGHTBUTTON | TPM_LEFTALIGN, point.x, point.y, this);
+            p_Menu = NULL;
+        }
+    }
+    *pResult = 0;
+}
+
+void CDataManager::OnDellayer()
+{
+    USES_CONVERSION;
+
+    m_wndTreeCtrl.ScreenToClient(&point);
+
+    HTREEITEM item;
+    UINT flag = TVHT_ONITEM;
+    item = m_wndTreeCtrl.HitTest(point, &flag);
+    if(item != NULL)
+    {
+        CString temp = m_wndTreeCtrl.GetItemText(item);
+
+        osg::Node* pNode = (osg::Node*)m_wndTreeCtrl.GetItemData(item);
+        x3::Object<IViewer3D> spViewer3D(m_spBuddy);
+        if( !spViewer3D.valid() )
+            return;
+        spViewer3D->RemoveNode(pNode);
+
+        CStringArray* aLayers = spViewer3D->GetLayersArray();
+		CStringArray* aLayerCheck = spViewer3D->GetLayerCheck();
+        for (int i = 0; i < aLayers->GetCount(); i++)
+        {
+			CString sL = aLayers->GetAt(i);
+			std::string fp = T2A(sL);
+			std::string filename = osgDB::getStrippedName(fp);
+			if (filename == T2A(temp))
+			{
+                aLayers->RemoveAt(i);
+				aLayerCheck->RemoveAt(i);
+            }
+        }
+    }
+}
+
+void CDataManager::OnSetDefLayer()
+{
+    USES_CONVERSION;
+
+    m_wndTreeCtrl.ScreenToClient(&point);
+
+    HTREEITEM item;
+    UINT flag = TVHT_ONITEM;
+    item = m_wndTreeCtrl.HitTest(point, &flag);
+    if(item != NULL)
+    {
+        UnBold();
+        m_wndTreeCtrl.SetItemBold(item, TRUE);
+        m_sDefLayer = m_wndTreeCtrl.GetItemText(item);
+		m_spViewer3D->SetDefLayer(m_sDefLayer);
+    }
+}
+
+void CDataManager::UnBold()
+{
+    HTREEITEM h;
+
+    HTREEITEM hRoot = m_wndTreeCtrl.GetRootItem();
+    h = FindItem(hRoot, m_sDefLayer);
+
+    if (h != NULL)
+    {
+        m_wndTreeCtrl.SetItemBold(h, FALSE);
+    }
+}
+
+void CDataManager::OnKeyChangeEditName()
+{
+    // TODO:  如果该控件是 RICHEDIT 控件，它将不
+    // 发送此通知，除非重写 CDialogEx::OnInitDialog()
+    // 函数并调用 CRichEditCtrl().SetEventMask()，
+    // 同时将 ENM_CHANGE 标志“或”运算到掩码中。
+
+    // TODO:  在此添加控件通知处理程序代码
+
+}
+
+CString CDataManager::FindSHPFile()
+{
+	CStringArray* a = m_spViewer3D->GetLayersArray();
+
+	if (m_sDefLayer == _T(""))
+	{
+		for (int i = 0; i < a->GetCount(); i++)
+		{
+			if (a->GetAt(i).Right(4) == L".shp")
+			{
+				return a->GetAt(i);
+			}
+		}
+		return L"";
+	}
+	else
+	{
+		for (int i = 0; i < a->GetCount(); i++)
+		{
+			if (a->GetAt(i).Find(m_sDefLayer) > -1)
+			{
+				return a->GetAt(i);
+			}
+		}
+		return L"";
+	}	
+}
+
+bool IsContainAlpha(CString str)
+{
+	bool bflag = false;
+	int length = str.GetLength();
+	for(int i = 0 ; i < length ; i++)
+	{
+		int num = str.GetAt(i);
+		if((num>='a'&&num<='z')||(num>='A'&&num<='Z'))
+		{
+			bflag = true;
+			break;
+		} 
+	}
+
+	return bflag;
+}
+
+void CDataManager::DoSearch(CString sShpFile)
+{
+    USES_CONVERSION;
+    osgEarth::Drivers::OGRFeatureOptions ogrOpt;
+    std::string path = W2A(sShpFile);
+    if (path.length() == 0)
+    {
+        return;
+    }
+
+	if (int(path.find('/')) > -1)
+	{
+		CString sProjPath = m_spViewer3D->GetProjectFilePath();
+		CString sProjDir = sProjPath.Left(sProjPath.ReverseFind('\\'));
+		std::string FileNameEx = path.substr(path.find_last_of( '/' )+1);
+
+		path = T2A(sProjDir + _T("\\") + CString(FileNameEx.c_str()));
+	}
+	
+
+	/*
+	//如果关键字为空，则显示所有数据
+	if (m_sKey == _T(""))
+	{
+		return;
+	}
+	*/
+    ogrOpt.url() = path;
+
+    m_cList.DeleteAllItems();
+
+    features = osgEarth::Features::FeatureSourceFactory::create(ogrOpt);
+    features->initialize();
+
+    osg::ref_ptr<osgEarth::Features::FeatureCursor> cursor = features->createFeatureCursor();
+
+    while(cursor->hasMore())
+    {
+        //输出feature中的信息
+        osgEarth::Features::Feature* feature = cursor->nextFeature();
+        osgEarth::Symbology::GeometryIterator parts (feature->getGeometry(), false);
+
+
+        //std::string sHeight = feature->getString("Elevation");
+        //double height = atof(sHeight.data());
+
+        while(parts.hasMore())
+        {
+            osgEarth::Symbology::Geometry* part = parts.next();
+
+			if (m_sKey != _T(""))
+			{
+				const osgEarth::Features::AttributeTable& attrs = feature->getAttrs();
+				for( osgEarth::Features::AttributeTable::const_iterator i = attrs.begin(); i != attrs.end(); ++i)
+				{
+					CString sName = CString(i->first.c_str());
+					CString sValue = CString(i->second.getString().c_str());
+					if ( (sValue.Find(m_sKey) >= 0 && sValue != _T("")) )
+					{
+						m_cList.InsertItem(0, _T("1"));
+						m_cList.SetItemText (0, 0, sName);
+						m_cList.SetItemText (0, 1, sValue);
+						vFeature.insert(vFeature.begin(), feature);
+						v.insert(v.begin(), part);
+						break;
+						//m_cList.SetItemData(0, (DWORD_PTR)part);
+					}
+				}
+			}
+			else
+			{
+				const osgEarth::Features::AttributeTable& attrs = feature->getAttrs();
+				for( osgEarth::Features::AttributeTable::const_iterator i = attrs.begin(); i != attrs.end(); ++i)
+				{
+					CString sName = CString(i->first.c_str());
+					CString sValue = CString(i->second.getString().c_str());
+
+					if (IsContainAlpha(sName))
+					{
+						continue;
+					}
+
+					m_cList.InsertItem(0, _T("1"));
+					m_cList.SetItemText (0, 0, sName);
+					m_cList.SetItemText (0, 1, sValue);
+					vFeature.insert(vFeature.begin(), feature);
+					v.insert(v.begin(), part);
+					break;
+				}
+			}
+            
+        }
+    }
+}
+
+osg::ref_ptr<osg::Geode> CDataManager::AddPolygonNode(osg::Vec3Array* arr)
+{
+    USES_CONVERSION;
+
+    osg::ref_ptr<osg::Vec4Array> shared_colors = new osg::Vec4Array;
+    shared_colors->push_back(osg::Vec4(1.0f, 1.0f, 0.0f, 0.8f));
+
+    // same trick for shared normal.
+    osg::ref_ptr<osg::Vec3Array> shared_normals = new osg::Vec3Array;
+    shared_normals->push_back(osg::Vec3(0.0f, -1.0f, 0.0f));
+
+    osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+    osg::Geometry* polyGeom = new osg::Geometry();
+
+    int numCoords = arr->getNumElements();
+    polyGeom->setVertexArray(arr);
+
+    polyGeom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_LOOP, 0, numCoords));
+
+    // use the shared color array.
+    polyGeom->setColorArray(shared_colors.get(), osg::Array::BIND_OVERALL);
+
+    // use the shared normal array.
+    polyGeom->setNormalArray(shared_normals.get(), osg::Array::BIND_OVERALL);
+
+    geode->addDrawable(polyGeom);
+
+    CString s;
+    s.Format(_T("线"));
+    geode->setName(W2A(s.GetBuffer(0)));
+
+    osg::StateSet* ss = geode->getOrCreateStateSet();
+    ss->setMode(GL_BLEND, osg::StateAttribute::ON);
+    ss->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+    ss->setAttributeAndModes( new osg::LineWidth(5.0f) );
+
+    return geode.get();
+}
+
+void CDataManager::OnNMClickList(NMHDR *pNMHDR, LRESULT *pResult)
+{
+    LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+
+    int nItem = m_cList.GetSelectionMark();
+    if (nItem >= 0)
+    {
+		CString str = m_cList.GetItemText(nItem, 0);
+        CString strValue = m_cList.GetItemText(nItem, 1);
+        DWORD_PTR  dd = m_cList.GetItemData(nItem);
+        //part = (osgEarth::Symbology::Geometry*)(m_cList.GetItemData(nItem));
+        m_geoPart = v.at(nItem);
+
+		std::string sGC = vFeature.at(nItem)->getString("高程");
+		std::string sDG = vFeature.at(nItem)->getString("底高");
+		std::string sDG2 = vFeature.at(nItem)->getString("顶高");
+		std::string sTH = vFeature.at(nItem)->getString("TH");
+
+		if (!sGC.empty() && !sDG.empty() && !sDG2.empty())
+		{
+			double dGC = atof(sGC.data());
+			double dDG = atof(sDG.data());
+			double dDG2 = atof(sDG2.data());
+
+			m_spViewer3D->RemoveNode(gTemp);
+
+			MakeFloor3DBorder(vFeature.at(nItem), dGC+dDG, dGC + dDG2);
+		}
+		else if (!sTH.empty())
+				MakeBuildingStruct(sTH);
+		else
+		{
+			std::string sJD = vFeature.at(nItem)->getString("x");
+			std::string sWD = vFeature.at(nItem)->getString("y");
+			std::string sH = vFeature.at(nItem)->getString("z");
+			double dJD = atof(sJD.data());
+			double dWD = atof(sWD.data());
+			double dH = atof(sH.data());
+
+			ShowPOI(dJD, dWD, dH, strValue);
+		}
+
+		ShowAttWin();
+
+		m_pAttInfoWin->RemoveAllRows();
+
+		const osgEarth::Features::AttributeTable& attrs = vFeature.at(nItem)->getAttrs();
+		for( osgEarth::Features::AttributeTable::const_iterator i = attrs.begin(); i != attrs.end(); ++i)
+		{
+			CString sName = CString(i->first.c_str());
+			CString sValue = CString(i->second.getString().c_str());
+			m_pAttInfoWin->InsertRow(sName, sValue);
+		}
+    }
+    *pResult = 0;
+}
+
+void CDataManager::MakeFloor3DBorder(osgEarth::Features::Feature* feature, double dFloor, double dCeil)
+{
+	osgEarth::Symbology::GeometryIterator parts (feature->getGeometry(), false);
+
+	while(parts.hasMore())
+	{
+		osgEarth::Symbology::Geometry* part = parts.next();
+		osg::ref_ptr<osg::Vec3Array> allPoints = new osg::Vec3Array;
+
+		allPoints = part->toVec3Array();
+
+		osg::ref_ptr< osg::Vec3Array > v3 = new osg::Vec3Array;
+
+		for( osg::Vec3Array::iterator i = allPoints->begin(); i != allPoints->end(); ++i )
+		{
+			osg::Vec3d v(*i);
+			v.z() = v.z() + 1;
+			v3->push_back(v);
+		}
+
+		gTemp = new osg::Group();
+		for (int i=0;i<v3->size();i++)
+		{
+			osg::ref_ptr< osg::Vec3Array > v3Vert = new osg::Vec3Array;
+			osg::Vec3d ptVert,ptVertNext;
+
+			ptVert = osg::Vec3d((*v3)[i]);
+			if (i == v3->size()-1)
+			{
+				ptVertNext = osg::Vec3d((*v3)[0]);
+			}
+			else
+				ptVertNext = osg::Vec3d((*v3)[i+1]);
+
+			ptVert.z() = dFloor;
+			ptVertNext.z() = dFloor;
+			v3Vert->push_back(ptVert);
+			v3Vert->push_back(ptVertNext);
+
+			ptVertNext.z() = dCeil;
+			v3Vert->push_back(ptVertNext);
+
+			ptVert.z() = dCeil;
+			v3Vert->push_back(ptVert);
+
+			gTemp->addChild(AddPolygonNode(v3Vert.get()));
+		}
+
+		gTemp->setName("线框");
+		m_spViewer3D->AddNode(gTemp);
+	}
+
+#ifdef _2D
+	const osg::BoundingSphere& bs = gTemp->getBound();
+	if (fabs(bs.radius()) <= DBL_EPSILON) // invalid node
+		return;
+
+	m_spViewer3D->CenterNode(gTemp, 150);
+#else
+	m_spViewer3D->FlyToViewport(v3f.x(), v3f.y(), 100);
+#endif
+}
+
+// create text which sits in 3D space such as would be inserted into a normal model
+osg::Group* CDataManager::create3DText(const osg::Vec3& center,float radius, CString sText)
+{
+	USES_CONVERSION;
+
+	osg::Geode* geode  = new osg::Geode;
+
+	////////////////////////////////////////////////////////////////////////////////////////////////////////
+	//    
+	// Examples of how to set up axis/orientation alignments
+	//
+
+	float characterSize=radius*0.2f;
+	float characterDepth=characterSize*0.2f;
+
+	osg::Vec3 pos(center.x()-radius*.5f,center.y()-radius*.5f,center.z()-radius*.5f);
+
+	osgText::Text3D* text1 = new osgText::Text3D;
+	text1->setFont("fonts/arial.ttf");
+	text1->setCharacterSize(characterSize);
+	text1->setCharacterDepth(characterDepth);
+	text1->setPosition(pos);
+	text1->setDrawMode(osgText::Text3D::TEXT | osgText::Text3D::BOUNDINGBOX);
+	text1->setAxisAlignment(osgText::Text3D::XZ_PLANE);
+	text1->setText(T2A(sText));
+	geode->addDrawable(text1);
+
+	osg::ShapeDrawable* shape = new osg::ShapeDrawable(new osg::Sphere(center,characterSize*10.0f));
+	shape->getOrCreateStateSet()->setMode(GL_LIGHTING,osg::StateAttribute::ON);
+	//geode->addDrawable(shape);
+
+	osg::Group* rootNode = new osg::Group;
+	rootNode->addChild(geode);
+
+	osg::Material* front = new osg::Material;
+	front->setAlpha(osg::Material::FRONT_AND_BACK,1);
+	front->setAmbient(osg::Material::FRONT_AND_BACK,osg::Vec4(0.2,0.2,0.2,1.0));
+	front->setDiffuse(osg::Material::FRONT_AND_BACK,osg::Vec4(.0,.0,1.0,1.0));
+	rootNode->getOrCreateStateSet()->setAttributeAndModes(front);
+
+
+	return rootNode;    
+}
+void CDataManager::ShowPOI(double dJD, double dWD, double dH, CString sText)
+{
+	
+	osg::Vec3d ptVert;
+	osg::ref_ptr< osg::Vec3Array > v3Vert = new osg::Vec3Array;
+
+	ptVert.x() = dJD + 10;
+	ptVert.y() = dWD + 10;
+	ptVert.z() = dH;
+	v3Vert->push_back(ptVert);
+
+	ptVert.x() = dJD - 10;
+	ptVert.y() = dWD + 10;
+	ptVert.z() = dH;
+	v3Vert->push_back(ptVert);
+
+	ptVert.x() = dJD - 10;
+	ptVert.y() = dWD - 10;
+	ptVert.z() = dH;
+	v3Vert->push_back(ptVert);
+
+	ptVert.x() = dJD + 10;
+	ptVert.y() = dWD - 10;
+	ptVert.z() = dH;
+	v3Vert->push_back(ptVert);
+
+	ptVert.x() = dJD + 10;
+	ptVert.y() = dWD + 10;
+	ptVert.z() = dH;
+	v3Vert->push_back(ptVert);
+
+	m_spViewer3D->Lock();
+
+	if (gTemp != nullptr)
+	{
+		m_spViewer3D->RemoveNode(gTemp.get());
+	}
+
+	gTemp = new osg::Group();
+
+	gTemp->addChild(AddPolygonNode(v3Vert.get()));
+
+	osg::Vec3 center(dJD,dWD,dH + 10);
+	float radius = 10.0f;
+
+	gTemp->addChild(create3DText(center, radius, sText));
+
+	gTemp->setName("兴趣点");
+	m_spViewer3D->AddNode(gTemp);
+
+	m_spViewer3D->Unlock();
+
+#ifdef _2D
+	const osg::BoundingSphere& bs = gTemp->getBound();
+	if (fabs(bs.radius()) <= DBL_EPSILON) // invalid node
+		return;
+
+	m_spViewer3D->CenterNode(gTemp, 150);
+#else
+	m_spViewer3D->FlyToViewport(v3f.x(), v3f.y(), 100);
+#endif
+}
+
+void CDataManager::MakeBuildingStruct(std::string sTH)
+{
+    if (gTemp != nullptr)
+        m_spViewer3D->RemoveNode(gTemp);
+
+    osg::ref_ptr<osg::Vec3Array> allPoints = new osg::Vec3Array;
+    allPoints = m_geoPart->toVec3Array();
+
+    double dH = 0;
+	
+	if (!sTH.empty())
+	{
+		dH = atof(sTH.data());
+	}
+	else
+		dH = GetBuildingHeight();
+
+    osg::ref_ptr< osg::Vec3Array > v3 = new osg::Vec3Array;
+
+    for( osg::Vec3Array::iterator i = allPoints->begin(); i != allPoints->end(); ++i )
+    {
+        osg::Vec3d v(*i);
+        v.z() = v.z() + 1;
+        v3->push_back(v);
+    }
+
+    gTemp = new osg::Group();
+    for (int i = 0; i < v3->size(); i++)
+    {
+        osg::ref_ptr< osg::Vec3Array > v3Vert = new osg::Vec3Array;
+        osg::Vec3d ptVert, ptVertNext;
+
+        ptVert = osg::Vec3d((*v3)[i]);
+        if (i == v3->size() - 1)
+        {
+            ptVertNext = osg::Vec3d((*v3)[0]);
+        }
+        else
+            ptVertNext = osg::Vec3d((*v3)[i + 1]);
+
+        v3Vert->push_back(ptVert);
+
+        v3Vert->push_back(ptVertNext);
+
+        ptVertNext.z() = dH + dStep;
+        v3Vert->push_back(ptVertNext);
+
+        ptVert.z() = dH + dStep;
+        v3Vert->push_back(ptVert);
+
+        gTemp->addChild(AddPolygonNode(v3Vert.get()));
+    }
+
+    osg::ref_ptr< osg::Vec3Array > v3Top = new osg::Vec3Array;
+
+    for (int i = 0; i < v3->size(); i++)
+    {
+        osg::Vec3d ptTop;
+
+        ptTop = osg::Vec3d((*v3)[i]);
+        ptTop.z() = dH + dStep;
+        v3Top->push_back(ptTop);
+    }
+    gTemp->addChild(AddPolygonNode(v3Top.get()));
+
+    gTemp->setName("线框");
+    m_spViewer3D->AddNode(gTemp);
+
+#ifdef _2D
+	const osg::BoundingSphere& bs = gTemp->getBound();
+    if (fabs(bs.radius()) <= DBL_EPSILON) // invalid node
+        return;
+
+    m_spViewer3D->CenterNode(gTemp, 250);
+#else
+    m_spViewer3D->FlyToViewport(v3f.x(), v3f.y(), 100);
+#endif
+}
+
+double CDataManager::GetBuildingHeight()
+{
+    double dHeight = 0.0;
+	double ds,de;
+	ds = dStartHeight;
+	de = dEndHeight;
+
+    //从0米开始，每0.5米计算一次范围内的横切点的Z值，一直计算到100米
+    //得到200个点，取200个点中的最大值
+    double aHeight[1024] = {0};
+    int n = 0;
+    for (double h = ds; h < de; h = h + dStep)
+    {
+		int nCrossNum = 0;
+        if (BuildingInThisHeight(h, nCrossNum))
+        {
+            aHeight[n] = h;
+        }
+		aPtsInHeight[n] = nCrossNum;
+
+		if (!bFindedStart)
+		{
+			if (nCrossNum > 1000 && dStartHeight < 10)
+			{
+				dStartHeight = h;
+				bFindedStart = true;
+			}
+		}
+
+		if (!bFindedEnd && bFindedStart)
+		{
+			if (nCrossNum < 161)
+			{
+				dEndHeight = h+2;
+				bFindedEnd = true;
+			}
+		}
+
+        n++;
+    }
+
+    for (int i = 0; i < 1024; i++)
+    {
+        if (aHeight[i] > dHeight)
+        {
+            dHeight = aHeight[i];
+        }
+    }
+
+    return dHeight;
+}
+
+bool CDataManager::BuildingInThisHeight(double height, int & nCrossNum)
+{
+    //建筑物的范围坐标
+    osg::ref_ptr<osg::Vec3Array> allPoints = new osg::Vec3Array;
+    allPoints = m_geoPart->toVec3Array();
+
+    Vec3dVector* vv = new Vec3dVector();
+    for( osg::Vec3Array::iterator i = allPoints->begin(); i != allPoints->end(); ++i )
+    {
+        osg::Vec3d v(*i);
+        vv->push_back(v);
+    }
+
+    osgEarth::Symbology::Ring r(vv);
+
+    osg::Plane plane(osg::Vec4(0, 0, 1, -1 * height));
+    osg::ref_ptr<osgUtil::PlaneIntersector> pi = new osgUtil::PlaneIntersector(plane);
+    osgUtil::IntersectionVisitor iv(pi);
+    m_spViewer3D->getRootNode()->accept(iv);
+    if(pi->containsIntersections())
+    {
+        for(osgUtil::PlaneIntersector::Intersections::iterator it = pi->getIntersections().begin();
+                it != pi->getIntersections().end(); it++)
+        {
+            //交点坐标
+            std::vector<osg::Vec3d> intersectPoints = it->polyline;
+
+            //osg::Geode* geode=new osg::Geode;
+            //osg::Geometry* geom=new osg::Geometry;
+            //osg::Vec3Array* v3a=new osg::Vec3Array;
+            for (int i = 0; i < intersectPoints.size(); i++)
+            {
+				nCrossNum++;
+
+                //v3a->push_back(intersectPoints.at(i));
+                osg::Vec3d v3d = intersectPoints.at(i);
+                osg::Vec3d v3dNew = it->matrix->preMult(v3d);
+                if (r.contains2D(v3dNew.x(), v3dNew.y()))
+                {
+                    return true;
+                }
+            }
+            //geom->setVertexArray(v3a);
+            //geom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_LOOP,0,intersectPoints.size()));
+            //geode->addDrawable(geom);
+
+            //osg::ref_ptr<osg::MatrixTransform> spMatrixTransfrom = new osg::MatrixTransform(*(it->matrix.get()));
+            //spMatrixTransfrom->addChild(geode);
+            //spMatrixTransfrom->setName(("相交面"));
+            //m_spViewer3D->AddNode(spMatrixTransfrom);
+        }
+    }
+
+    return false;
+}
+
+void CDataManager::ShowAttWin()
+{
+	AFX_MANAGE_STATE_EX;
+	
+	x3::Object<IViewer3D> spViewer3D(m_spBuddy);
+
+	if (m_pAttInfoWin == NULL)
+	{
+		m_pAttInfoWin = new CDlgAttInfo();
+		m_pAttInfoWin->parent = (CObject*) this;
+		if (!m_pAttInfoWin->Create(IDD_DIALOG_ENTINFO))
+		{
+			AfxMessageBox(_T("创建窗口失败"));
+		}
+	}
+
+	m_pAttInfoWin->ShowWindow(SW_SHOW);
+
+	RECT r;
+	m_pAttInfoWin->GetWindowRect(&r);
+
+	int nWidth = r.right - r.left;
+	int nHeight = r.bottom - r.top;
+
+	r.left = spViewer3D->rectView3D.left + 6;
+	r.top = spViewer3D->rectView3D.top + 6;
+	r.right = r.left + nWidth;
+	r.bottom = r.top + nHeight;
+
+	m_pAttInfoWin->MoveWindow(&r);
+}
+
+void CDataManager::OnBnClickedButtonSearch()
+{
+	m_cKey.GetWindowText(m_sKey);
+	CString sShpFile = FindSHPFile();
+	if (sShpFile == _T(""))
+	{
+		return;
+	}
+	DoSearch(sShpFile);
+}
+
+void CDataManager::OnBnClickedButtonSearchAdv()
+{
+	m_pSearchAdv = new CDlgSearchAdv();
+	m_pSearchAdv->Create(CDlgSearchAdv::IDD);
+	m_pSearchAdv->ShowWindow(SW_SHOW);
+
+	RECT r;
+	m_pSearchAdv->GetWindowRect(&r);
+
+	int nWidth = r.right - r.left;
+	int nHeight = r.bottom - r.top;
+
+	r.left = m_spViewer3D->rectView3D.right - nWidth - 6;
+	r.top = m_spViewer3D->rectView3D.bottom - nHeight - 6;
+	r.right = r.left + nWidth;
+	r.bottom = r.top + nHeight;
+
+	m_pSearchAdv->MoveWindow(&r);
+
+	CString sShpFile = FindSHPFile();
+	if (sShpFile == _T(""))
+	{
+		return;
+	}
+	FillFieldsToDlg(sShpFile);
+	m_pSearchAdv->m_sShp = sShpFile;
+	m_pSearchAdv->m_spViewer3D = m_spViewer3D;
+}
+
+HBRUSH CDataManager::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)  
+{  
+	HBRUSH hbr = CWnd::OnCtlColor(pDC, pWnd, nCtlColor);  
+
+	// TODO:  Change any attributes of the DC here  
+	if (nCtlColor == CTLCOLOR_DLG)  
+		return (HBRUSH)::GetStockObject(BLACK_BRUSH);  
+	else  
+		pDC->SetTextColor(RGB(255, 0, 0));  
+
+	// TODO:  Return a different brush if the default is not desired  
+	return hbr;  
+}
+
+void CDataManager::OnSetDefLayer2(std::string filename)
+{
+	m_sDefLayer = CString(filename.c_str());
+}
+
+void CDataManager::OnProjectOpen(std::string filename)
+{
+	bInterDel = true;
+	HTREEITEM item = m_wndTreeCtrl.GetRootItem();
+	while(item != NULL)
+	{
+		osg::Node* pNode = (osg::Node*)m_wndTreeCtrl.GetItemData(item);
+		m_spViewer3D->RemoveNode(pNode);
+		item = m_wndTreeCtrl.GetNextSiblingItem(item);
+	}
+	bInterDel = false;
+
+	m_wndTreeCtrl.DeleteAllItems();
+}
+
+void CDataManager::FillFieldsToDlg(CString sShpFile)
+{
+	USES_CONVERSION;
+	osgEarth::Drivers::OGRFeatureOptions ogrOpt;
+	std::string path = W2A(sShpFile);
+	if (path.length() == 0)
+	{
+		return;
+	}
+
+	if (int(path.find('/')) > -1)
+	{
+		CString sProjPath = m_spViewer3D->GetProjectFilePath();
+		CString sProjDir = sProjPath.Left(sProjPath.ReverseFind('\\'));
+		std::string FileNameEx = path.substr(path.find_last_of( '/' )+1);
+
+		path = T2A(sProjDir + _T("\\") + CString(FileNameEx.c_str()));
+	}
+
+	ogrOpt.url() = path;
+
+	m_pSearchAdv->m_cFields.ResetContent();
+
+	features = osgEarth::Features::FeatureSourceFactory::create(ogrOpt);
+	features->initialize();
+
+	osg::ref_ptr<osgEarth::Features::FeatureCursor> cursor = features->createFeatureCursor();
+
+	while(cursor->hasMore())
+	{
+		//输出feature中的信息
+		osgEarth::Features::Feature* feature = cursor->nextFeature();
+		
+		int nIndex = 0;
+		const osgEarth::Features::AttributeTable& attrs = feature->getAttrs();
+		for( osgEarth::Features::AttributeTable::const_iterator i = attrs.begin(); i != attrs.end(); ++i)
+		{
+			CString sName = CString(i->first.c_str());
+			m_pSearchAdv->m_cFields.AddString(sName);
+
+			m_pSearchAdv->m_cList.InsertColumn (nIndex++, sName, LVCFMT_LEFT, 80);
+		}
+
+		break;
+	}
+}

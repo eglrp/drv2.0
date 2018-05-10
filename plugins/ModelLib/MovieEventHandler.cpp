@@ -1,0 +1,355 @@
+#include "stdafx.h"
+#include "MovieEventHandler.h"
+#include "osgViewer/Viewer"
+#include "osg/Notify"
+#include "osg/io_utils"
+#include <iostream>
+
+void MovieEventHandler::set(osg::Node* node)
+{
+	_imageStreamList.clear();
+	if (node)
+	{
+		FindImageStreamsVisitor fisv(_imageStreamList);
+		node->accept(fisv);
+	}
+}
+
+void MovieEventHandler::addNode(osg::Node* node)
+{
+	if (node)
+	{
+		FindImageStreamsVisitor fisv(_imageStreamList);
+		node->accept(fisv);
+	}
+}
+
+void MovieEventHandler::addImage(osg::Image* image)
+{
+	if( image )
+	{
+		osg::ref_ptr<osg::ImageStream> spImageStream = dynamic_cast<osg::ImageStream*>(image);
+		if (spImageStream.valid())
+		{
+			for(ImageStreamList::iterator itr=_imageStreamList.begin(); itr!=_imageStreamList.end(); )
+			{
+				if( !(*itr).valid() )
+				{
+					itr = _imageStreamList.erase(itr);
+					continue;
+				}
+
+				if( *itr==spImageStream.get() )
+					return;
+
+				itr++;
+			}
+
+			_imageStreamList.push_back(spImageStream.get());
+		}
+	}
+}
+
+void MovieEventHandler::Restart()
+{
+	for(ImageStreamList::iterator itr=_imageStreamList.begin(); itr!=_imageStreamList.end(); )
+	{
+		if( !(*itr).valid() )
+		{
+			itr = _imageStreamList.erase(itr);
+			continue;
+		}
+
+		std::cout<< (*itr).get() << " Restart"<<std::endl;
+		(*itr)->rewind();
+		(*itr)->play();
+		itr++;
+	}
+}
+
+void MovieEventHandler::play()
+{
+	for(ImageStreamList::iterator itr=_imageStreamList.begin(); itr!=_imageStreamList.end(); )
+	{
+		if( !(*itr).valid() )
+		{
+			itr = _imageStreamList.erase(itr);
+			continue;
+		}
+
+		osg::ImageStream::StreamStatus playToggle = (*itr)->getStatus();
+		if (playToggle != osg::ImageStream::PLAYING)
+		{
+			std::cout<< (*itr).get() << " Play"<<std::endl;
+			(*itr)->play();
+		}
+		else
+		{
+			// playing, so pause
+			//std::cout<< (*itr).get() << " Pause"<<std::endl;
+			//(*itr)->pause();
+		}
+
+		itr++;
+	}
+}
+
+void MovieEventHandler::pause()
+{
+	for(ImageStreamList::iterator itr=_imageStreamList.begin(); itr!=_imageStreamList.end(); )
+	{
+		if( !(*itr).valid() )
+		{
+			itr = _imageStreamList.erase(itr);
+			continue;
+		}
+
+		(*itr)->pause();
+		itr++;
+	}
+}
+
+void MovieEventHandler::ToggleLooping()
+{
+	for(ImageStreamList::iterator itr=_imageStreamList.begin(); itr!=_imageStreamList.end(); )
+	{
+		if( !(*itr).valid() )
+		{
+			itr = _imageStreamList.erase(itr);
+			continue;
+		}
+
+		if ( (*itr)->getLoopingMode() == osg::ImageStream::LOOPING)
+		{
+			std::cout<< (*itr).get() << " Toggle Looping Off"<<std::endl;
+			(*itr)->setLoopingMode( osg::ImageStream::NO_LOOPING );
+		}
+		else
+		{
+			std::cout<< (*itr).get() << " Toggle Looping On"<<std::endl;
+			(*itr)->setLoopingMode( osg::ImageStream::LOOPING );
+		}
+
+		itr++;
+	}
+}
+
+void MovieEventHandler::IncreaseSpeed()
+{
+	for(ImageStreamList::iterator itr=_imageStreamList.begin(); itr!=_imageStreamList.end(); )
+	{
+		if( !(*itr).valid() )
+		{
+			itr = _imageStreamList.erase(itr);
+			continue;
+		}
+
+		double tm = (*itr)->getTimeMultiplier();
+		tm += 0.1;
+		(*itr)->setTimeMultiplier(tm);
+		std::cout << (*itr).get() << " Increase speed rate "<< (*itr)->getTimeMultiplier() << std::endl;
+		itr++;
+	}
+}
+
+void MovieEventHandler::DecreaseSpeed()
+{
+	for(ImageStreamList::iterator itr=_imageStreamList.begin(); itr!=_imageStreamList.end(); )
+	{
+		if( !(*itr).valid() )
+		{
+			itr = _imageStreamList.erase(itr);
+			continue;
+		}
+
+		double tm = (*itr)->getTimeMultiplier();
+		tm -= 0.1;
+		(*itr)->setTimeMultiplier(tm);
+		std::cout << (*itr).get() << " Decrease speed rate "<< (*itr)->getTimeMultiplier() << std::endl;
+
+		itr++;
+	}
+}
+
+bool MovieEventHandler::handle(const osgGA::GUIEventAdapter& ea,osgGA::GUIActionAdapter& aa, osg::Object*, osg::NodeVisitor* nv)
+{
+	switch(ea.getEventType())
+	{
+	case(osgGA::GUIEventAdapter::MOVE):
+	case(osgGA::GUIEventAdapter::PUSH):
+	case(osgGA::GUIEventAdapter::RELEASE):
+		{
+			if (_trackMouse)
+			{
+				osgViewer::View* view = dynamic_cast<osgViewer::View*>(&aa);
+				osgUtil::LineSegmentIntersector::Intersections intersections;
+				bool foundIntersection = view==0 ? false :
+					(nv==0 ? view->computeIntersections(ea, intersections) :
+					view->computeIntersections(ea, nv->getNodePath(), intersections));
+
+				if (foundIntersection)
+				{
+
+					// use the nearest intersection
+					const osgUtil::LineSegmentIntersector::Intersection& intersection = *(intersections.begin());
+					osg::Drawable* drawable = intersection.drawable.get();
+					osg::Geometry* geometry = drawable ? drawable->asGeometry() : 0;
+					osg::Vec3Array* vertices = geometry ? dynamic_cast<osg::Vec3Array*>(geometry->getVertexArray()) : 0;
+					if (vertices)
+					{
+						// get the vertex indices.
+						const osgUtil::LineSegmentIntersector::Intersection::IndexList& indices = intersection.indexList;
+						const osgUtil::LineSegmentIntersector::Intersection::RatioList& ratios = intersection.ratioList;
+
+						if (indices.size()==3 && ratios.size()==3)
+						{
+							unsigned int i1 = indices[0];
+							unsigned int i2 = indices[1];
+							unsigned int i3 = indices[2];
+
+							float r1 = ratios[0];
+							float r2 = ratios[1];
+							float r3 = ratios[2];
+
+							osg::Array* texcoords = (geometry->getNumTexCoordArrays()>0) ? geometry->getTexCoordArray(0) : 0;
+							osg::Vec2Array* texcoords_Vec2Array = dynamic_cast<osg::Vec2Array*>(texcoords);
+							if (texcoords_Vec2Array)
+							{
+								// we have tex coord array so now we can compute the final tex coord at the point of intersection.
+								osg::Vec2 tc1 = (*texcoords_Vec2Array)[i1];
+								osg::Vec2 tc2 = (*texcoords_Vec2Array)[i2];
+								osg::Vec2 tc3 = (*texcoords_Vec2Array)[i3];
+								osg::Vec2 tc = tc1*r1 + tc2*r2 + tc3*r3;
+
+								osg::notify(osg::NOTICE)<<"We hit tex coords "<<tc<<std::endl;
+
+							}
+						}
+						else
+						{
+							osg::notify(osg::NOTICE)<<"Intersection has insufficient indices to work with";
+						}
+
+					}
+
+					if( drawable!=NULL )
+					{
+						osg::StateSet* stateset  = drawable->getStateSet();
+						if( stateset )
+						{
+							osg::StateAttribute* attr = stateset->getTextureAttribute(0,osg::StateAttribute::TEXTURE);
+							if (attr)
+							{
+								osg::ImageStream* pImageStream = NULL;
+								osg::Texture2D* texture2D = dynamic_cast<osg::Texture2D*>(attr);
+								if (texture2D)
+									pImageStream = dynamic_cast<osg::ImageStream*>(texture2D->getImage());
+								else
+								{
+									osg::TextureRectangle* textureRec = dynamic_cast<osg::TextureRectangle*>(attr);
+									if (textureRec)
+										pImageStream = dynamic_cast<osg::ImageStream*>(textureRec->getImage());
+								}
+
+								if( pImageStream )
+								{
+									osg::ImageStream::StreamStatus playToggle = pImageStream->getStatus();
+									if (playToggle != osg::ImageStream::PLAYING)
+										pImageStream->play();
+									else
+										pImageStream->pause();
+								}
+							}
+						}
+					}
+				}
+				else
+				{
+					osg::notify(osg::NOTICE)<<"No intersection"<<std::endl;
+				}
+			}
+			break;
+		}
+	case(osgGA::GUIEventAdapter::KEYDOWN):
+		{
+			if (ea.getKey()=='p')
+			{
+				play();
+				return true;
+			}
+			else if (ea.getKey()=='r')
+			{
+				Restart();
+				return true;
+			}
+			else if (ea.getKey()=='>')
+			{
+				for(ImageStreamList::iterator itr=_imageStreamList.begin(); itr!=_imageStreamList.end(); )
+				{
+					if( !(*itr).valid() )
+					{
+						itr = _imageStreamList.erase(itr);
+						continue;
+					}
+
+					std::cout<<"Seeking"<<std::endl;
+					if(_seekIncr > 3) _seekIncr = 0;
+					double length = (*itr)->getLength();
+					double t_pos = (length/4.0f)*_seekIncr;
+					//(*itr)->rewind();
+					(*itr)->seek(t_pos);
+					(*itr)->play();
+					_seekIncr++;
+					itr++;
+				}
+				return true;
+			}
+			else if (ea.getKey()=='L')
+			{
+				ToggleLooping();
+				return true;
+			}
+			else if (ea.getKey()=='+')
+			{
+				IncreaseSpeed();
+				return true;
+			}
+			else if (ea.getKey()=='-')
+			{
+				DecreaseSpeed();
+				return true;
+			}
+			else if (ea.getKey()=='o')
+			{
+				for(ImageStreamList::iterator itr=_imageStreamList.begin(); itr!=_imageStreamList.end(); )
+				{
+					if( !(*itr).valid() )
+					{
+						itr = _imageStreamList.erase(itr);
+						continue;
+					}
+
+					std::cout<< (*itr).get() << " Frame rate  "<< (*itr)->getFrameRate() <<std::endl;
+					itr++;
+				}
+				return true;
+			}
+			return false;
+		}
+
+	default:
+		return false;
+	}
+	return false;
+}
+
+void MovieEventHandler::getUsage(osg::ApplicationUsage& usage) const
+{
+	usage.addKeyboardMouseBinding("p","Play/Pause movie");
+	usage.addKeyboardMouseBinding("r","Restart movie");
+	usage.addKeyboardMouseBinding("l","Toggle looping of movie");
+	usage.addKeyboardMouseBinding("+","Increase speed of movie");
+	usage.addKeyboardMouseBinding("-","Decrease speed of movie");
+	usage.addKeyboardMouseBinding("o","Display frame rate of movie");
+	usage.addKeyboardMouseBinding(">","Advance the movie using seek");
+}

@@ -1,0 +1,516 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug_2D|Win32">
+      <Configuration>Debug_2D</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug_2D|x64">
+      <Configuration>Debug_2D</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_2D_Debug|Win32">
+      <Configuration>Release_2D_Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_2D_Debug|x64">
+      <Configuration>Release_2D_Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_2D|Win32">
+      <Configuration>Release_2D</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release_2D|x64">
+      <Configuration>Release_2D</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{13F7DC09-C71C-4740-A60C-CA92B625B8C5}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>DataManager</RootNamespace>
+    <SccProjectName>
+    </SccProjectName>
+    <SccLocalPath>
+    </SccLocalPath>
+    <SccProvider>
+    </SccProvider>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_2D|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_2D|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_2D|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_2D_Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_2D|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_2D_Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+    <UseOfMfc>Dynamic</UseOfMfc>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug_2D|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug_2D|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_2D|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_2D_Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_2D|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release_2D_Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IntDir>$(PlatformShortName)\$(Configuration)\</IntDir>
+    <OutDir>..\..\bin\$(PlatformShortName)\$(Configuration)\plugins\</OutDir>
+    <TargetExt>.pln</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_2D|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+    <IntDir>$(PlatformShortName)\$(Configuration)\</IntDir>
+    <OutDir>..\..\bin\$(PlatformName)\$(Configuration)\plugins\</OutDir>
+    <TargetExt>.pln</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IntDir>$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>..\..\bin\$(PlatformName)\$(Configuration)\plugins\</OutDir>
+    <TargetExt>.pln</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug_2D|x64'">
+    <LinkIncremental>true</LinkIncremental>
+    <IntDir>$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>..\..\bin\$(PlatformName)\$(Configuration)\plugins\</OutDir>
+    <TargetExt>.pln</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IntDir>$(PlatformShortName)\$(Configuration)\</IntDir>
+    <OutDir>..\..\bin\$(PlatformShortName)\$(Configuration)\plugins\</OutDir>
+    <TargetExt>.pln</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_2D|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IntDir>$(PlatformShortName)\$(Configuration)\</IntDir>
+    <OutDir>..\..\bin\$(PlatformName)\$(Configuration)\plugins\</OutDir>
+    <TargetExt>.pln</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_2D_Debug|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+    <IntDir>$(PlatformShortName)\$(Configuration)\</IntDir>
+    <OutDir>..\..\bin\$(PlatformName)\$(Configuration)\plugins\</OutDir>
+    <TargetExt>.pln</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IntDir>$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>..\..\bin\$(PlatformName)\$(Configuration)\plugins\</OutDir>
+    <TargetExt>.pln</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_2D|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IntDir>$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>..\..\..\bin_drv\$(PlatformName)\$(Configuration)\plugins\</OutDir>
+    <TargetExt>.pln</TargetExt>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_2D_Debug|x64'">
+    <LinkIncremental>false</LinkIncremental>
+    <IntDir>$(PlatformName)\$(Configuration)\</IntDir>
+    <OutDir>..\..\bin\$(PlatformName)\$(Configuration)\plugins\</OutDir>
+    <TargetExt>.pln</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_AFXEXT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../include;../../include/x3py;../../include/osg;../../include/EarthMatrix</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\..\lib\$(PlatformShortName)\$(Configuration)\;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OpenThreadsd.lib;osgd.lib;osgGAd.lib;osgViewerd.lib;osgDBd.lib;osgTextd.lib;osgUtild.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_2D|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_2D;WIN32;_DEBUG;_WINDOWS;_AFXEXT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../include;../../include/x3py;../../include/osg3.2.1;../../include/EarthMatrix;X:\GIS\OSG\OSGdemo\src\osgearth-2.6\src</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\..\lib\$(PlatformName)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OpenThreadsD.lib;osgD.lib;osgGAD.lib;osgViewerD.lib;osgDBD.lib;osgTextD.lib;osgUtilD.lib;osgEarthD.lib;osgEarthFeaturesD.lib;osgEarthUtilD.lib;osgEarthSymbologyD.lib;osgEarthAnnotationD.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_AFXEXT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../include;../../include/x3py;../../include/osg;../../include/EarthMatrix</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\..\lib\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OpenThreadsd.lib;osgd.lib;osgGAd.lib;osgViewerd.lib;osgDBd.lib;osgTextd.lib;osgUtild.lib;osgEarthd.lib;osgEarthFeaturesd.lib;osgEarthUtild.lib;osgEarthSymbologyd.lib;osgEarthAnnotationd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug_2D|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>_2D;WIN32;_DEBUG;_WINDOWS;_AFXEXT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../include;../../include/x3py;../../include/osg;../../include/EarthMatrix;F:\5L-develop\EarthMatrix2\EarthMatrix\include\opencv_249\include;F:\5L-develop\EarthMatrix2\EarthMatrix\include\opencv_249\include\opencv2;F:\5L-develop\EarthMatrix2\EarthMatrix\include\opencv_249\include\opencv</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <AdditionalLibraryDirectories>..\..\lib\$(PlatformName)\Debug\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OpenThreadsd.lib;osgd.lib;osgGAd.lib;osgViewerd.lib;osgDBd.lib;osgTextd.lib;osgUtild.lib;osgEarthd.lib;osgEarthFeaturesd.lib;osgEarthUtild.lib;osgEarthSymbologyd.lib;osgEarthAnnotationd.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../include;../../include/x3py;../../include/osg;../../include/EarthMatrix</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\..\lib\$(PlatformShortName)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OpenThreads.lib;osg.lib;osgGA.lib;osgViewer.lib;osgDB.lib;osgText.lib;osgUtil.lib;osgEarth.lib;osgEarthFeatures.lib;osgEarthUtil.lib;osgEarthSymbology.lib;osgEarthAnnotation.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_2D|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>_2D;WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../include;../../include/x3py;../../include/osg3.2.1;../../include/EarthMatrix;X:\GIS\OSG\OSGdemo\src\osgearth-2.6\src</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\..\lib\$(PlatformName)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OpenThreads.lib;osg.lib;osgGA.lib;osgViewer.lib;osgDB.lib;osgText.lib;osgUtil.lib;osgEarth.lib;osgEarthFeatures.lib;osgEarthUtil.lib;osgEarthSymbology.lib;osgEarthAnnotation.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_2D_Debug|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>_2D;WIN32;NDEBUG;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../include;../../include/x3py;../../include/osg3.2.1;../../include/EarthMatrix;X:\GIS\OSG\OSGdemo\src\osgearth-2.6\src</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\..\lib\$(PlatformName)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OpenThreads.lib;osg.lib;osgGA.lib;osgViewer.lib;osgDB.lib;osgText.lib;osgUtil.lib;osgEarth.lib;osgEarthFeatures.lib;osgEarthUtil.lib;osgEarthSymbology.lib;osgEarthAnnotation.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>NDEBUG;_WINDOWS;_AFXEXT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../include;../../include/x3py;../../include/osg;../../include/EarthMatrix</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\..\lib\$(PlatformName)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OpenThreads.lib;osg.lib;osgGA.lib;osgViewer.lib;osgDB.lib;osgText.lib;osgUtil.lib;osgEarth.lib;osgEarthFeatures.lib;osgEarthUtil.lib;osgEarthSymbology.lib;osgEarthAnnotation.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_2D|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>Disabled</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>_2D;NDEBUG;_WINDOWS;_AFXEXT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\..\..\dependency\otherDependency\vlc0\include;../../../dependency\otherDependency/include_mysql;../../../dependency/otherDependency/x3py;../../../dependency/otherDependency;../../../dependency/otherDependency/osg;../../include/EarthMatrix;../../../dependency/otherDependency\opencv_249\include\opencv2;../../../dependency/otherDependency\opencv_249\include\opencv;../../../dependency/otherDependency\opencv_249\include;../../../dependency/otherDependency/sqlite3/include;../../../dependency/otherDependency\gdal\include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>false</OptimizeReferences>
+      <AdditionalLibraryDirectories>../../../dependency/otherDependency\vlc0\lib;../../../dependency/otherDependency\sqlite3\lib;..\..\..\dependency\lib\$(PlatformName)\Release\;../../../dependency/otherDependency/opencv_249\lib;../../../dependency/otherDependency\opencv_249\staticlib;../../../dependency/otherDependency\gdal\lib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OpenThreads.lib;osg.lib;osgGA.lib;osgFX.lib;osgViewer.lib;osgDB.lib;osgText.lib;osgUtil.lib;osgEarth.lib;osgEarthFeatures.lib;osgEarthUtil.lib;osgEarthSymbology.lib;osgEarthAnnotation.lib;opencv_imgproc249.lib;opencv_highgui249.lib;opencv_core249.lib;opencv_photo249.lib;opencv_video249.lib;zlib.lib;libmysql.lib;sqlite3.lib;gdal_i.lib;ogrsf_frmts.lib;ogrsf_frmts_sup.lib;libvlc.lib;libvlccore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release_2D_Debug|x64'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <Optimization>Disabled</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>_2D;NDEBUG;_WINDOWS;_AFXEXT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../include/include;../../include;../../include/x3py;../../include/osg;../../include/EarthMatrix;../../include\opencv_249\include\opencv2;../../include\opencv_249\include\opencv;../../include\opencv_249\include;../../include/sqlite3/include</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalLibraryDirectories>..\..\include\sqlite3\lib;..\..\lib\$(PlatformName)\Release\;../../include/opencv_249\lib;../../include\opencv_249\staticlib</AdditionalLibraryDirectories>
+      <AdditionalDependencies>OpenThreads.lib;osg.lib;osgGA.lib;osgFX.lib;osgViewer.lib;osgDB.lib;osgText.lib;osgUtil.lib;osgEarth.lib;osgEarthFeatures.lib;osgEarthUtil.lib;osgEarthSymbology.lib;osgEarthAnnotation.lib;opencv_imgproc249.lib;opencv_highgui249.lib;opencv_core249.lib;opencv_photo249.lib;opencv_video249.lib;zlib.lib;libmysql.lib;sqlite3.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="..\..\EarthMatrixRibbon\res\background.bmp" />
+    <None Include="..\..\EarthMatrixRibbon\res\background_com.bmp" />
+    <None Include="..\..\EarthMatrixRibbon\res\background_dlg.bmp" />
+    <None Include="..\..\EarthMatrixRibbon\res\playwndbackground.bmp" />
+    <None Include="LineSegmentIntersector" />
+    <None Include="ReadMe.txt" />
+    <None Include="toolbar.bmp" />
+    <None Include="TriangleFunctor" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\include\EarthMatrix\CMyListCtr.h" />
+    <ClInclude Include="..\..\include\EarthMatrix\ColorListCtrl.h" />
+    <ClInclude Include="BackgroundDlg.h" />
+    <ClInclude Include="BatchQuery.h" />
+    <ClInclude Include="comFunction.h" />
+    <ClInclude Include="CommunityDlg.h" />
+    <ClInclude Include="CVMediaPlayerDlg.h" />
+    <ClInclude Include="CvvImage.h" />
+    <ClInclude Include="CDataShowInListView.h" />
+    <ClInclude Include="DLGanbaodongtai.h" />
+    <ClInclude Include="DlgAttInfo.h" />
+    <ClInclude Include="DataManager.h" />
+    <ClInclude Include="DlgAttInfoEx.h" />
+    <ClInclude Include="DlgDB_Connect.h" />
+    <ClInclude Include="DLGjuhuigenzong.h" />
+    <ClInclude Include="DLGmenjinqingdan.h" />
+    <ClInclude Include="DLGNeighborSearch.h" />
+    <ClInclude Include="DLGQrencode.h" />
+    <ClInclude Include="DLGQrencode2.h" />
+    <ClInclude Include="DLGrenqunguanai.h" />
+    <ClInclude Include="DlgSearchAdv.h" />
+    <ClInclude Include="DLGSettings.h" />
+    <ClInclude Include="DLGShowRealData.h" />
+    <ClInclude Include="DLGSpecials.h" />
+    <ClInclude Include="DLGVLCPlayer.h" />
+    <ClInclude Include="DLGzuzhubiangeng.h" />
+    <ClInclude Include="DrawAreaHandler.h" />
+    <ClInclude Include="EncodeString.h" />
+    <ClInclude Include="ExplosiveDisposalDlg.h" />
+    <ClInclude Include="FireControlDlg.h" />
+    <ClInclude Include="functionEx.h" />
+    <ClInclude Include="HtmlDlg.h" />
+    <ClInclude Include="InternetInfoDlg.h" />
+    <ClInclude Include="myButton.h" />
+    <ClInclude Include="MyHtmlCtrl.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="serverConnect.h" />
+    <ClInclude Include="ShowPictureDlg.h" />
+    <ClInclude Include="SniperDlg.h" />
+    <ClInclude Include="sniperToolHandle.h" />
+    <ClInclude Include="stdafx.h" />
+    <ClInclude Include="targetver.h" />
+    <ClInclude Include="TreeCtrlX.h" />
+    <ClInclude Include="updateShpFile.h" />
+    <ClInclude Include="vlSwitchDisp.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\include\EarthMatrix\CMyListCtr.cpp" />
+    <ClCompile Include="..\..\include\EarthMatrix\ColorListCtrl.cpp" />
+    <ClCompile Include="BackgroundDlg.cpp" />
+    <ClCompile Include="BatchQuery.cpp" />
+    <ClCompile Include="CDataShowInListView.cpp" />
+    <ClCompile Include="comFunction.cpp" />
+    <ClCompile Include="CommunityDlg.cpp" />
+    <ClCompile Include="CVMediaPlayerDlg.cpp" />
+    <ClCompile Include="CvvImage.cpp" />
+    <ClCompile Include="DLGanbaodongtai.cpp" />
+    <ClCompile Include="DlgAttInfo.cpp" />
+    <ClCompile Include="DataManager.cpp" />
+    <ClCompile Include="DlgAttInfoEx.cpp" />
+    <ClCompile Include="DlgDB_Connect.cpp" />
+    <ClCompile Include="DLGjuhuigenzong.cpp" />
+    <ClCompile Include="DLGmenjinqingdan.cpp" />
+    <ClCompile Include="DLGNeighborSearch.cpp" />
+    <ClCompile Include="DLGQrencode.cpp" />
+    <ClCompile Include="DLGQrencode2.cpp" />
+    <ClCompile Include="DLGrenqunguanai.cpp" />
+    <ClCompile Include="DlgSearchAdv.cpp" />
+    <ClCompile Include="DLGSettings.cpp" />
+    <ClCompile Include="DLGShowRealData.cpp" />
+    <ClCompile Include="DLGSpecials.cpp" />
+    <ClCompile Include="DLGVLCPlayer.cpp" />
+    <ClCompile Include="DLGzuzhubiangeng.cpp" />
+    <ClCompile Include="DrawAreaHandler.cpp" />
+    <ClCompile Include="EncodeString.cpp" />
+    <ClCompile Include="ExplosiveDisposalDlg.cpp" />
+    <ClCompile Include="FireControlDlg.cpp" />
+    <ClCompile Include="functionEx.cpp" />
+    <ClCompile Include="HtmlDlg.cpp" />
+    <ClCompile Include="InternetInfoDlg.cpp" />
+    <ClCompile Include="LineSegmentIntersector.cpp" />
+    <ClCompile Include="module.cpp" />
+    <ClCompile Include="myButton.cpp" />
+    <ClCompile Include="MyHtmlCtrl.cpp" />
+    <ClCompile Include="serverConnect.cpp" />
+    <ClCompile Include="ShowPictureDlg.cpp" />
+    <ClCompile Include="SniperDlg.cpp" />
+    <ClCompile Include="sniperToolHandle.cpp" />
+    <ClCompile Include="stdafx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_2D|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug_2D|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_2D|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_2D_Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_2D|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_2D_Debug|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="TreeCtrlX.cpp" />
+    <ClCompile Include="updateShpFile.cpp" />
+    <ClCompile Include="vlSwitchDisp.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="DataManager.rc" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties RESOURCE_FILE="DataManager.rc" />
+    </VisualStudio>
+  </ProjectExtensions>
+</Project>

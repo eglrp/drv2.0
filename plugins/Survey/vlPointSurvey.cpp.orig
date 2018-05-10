@@ -1,0 +1,224 @@
+#include "stdafx.h"
+#include "vlPointSurvey.h"
+#include "EarthMatrixFunctions.h"
+#include "osgDB/ReadFile"
+#include "osgDB/FileNameUtils"
+#include "osgUtil/Optimizer"
+#include "IViewer3D.h"
+
+#include "resource.h"
+
+PointSuerveyToolEventHandler::PointSuerveyToolEventHandler(CPointSurveyInfoWin* win, const osgEarth::SpatialReference* m_pEllipsoid2, osgEarth::Annotation::CircleNode* m_pCircleNode2)
+{
+    m_pWin = win;
+    spf = m_pEllipsoid2;
+    m_pEllipsoid = spf->getEllipsoid();
+    m_pCircleNode = m_pCircleNode2;
+}
+
+bool PointSuerveyToolEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa)
+{
+    switch(ea.getEventType())
+    {
+    case(osgGA::GUIEventAdapter::PUSH):
+    {
+        osg::Vec3d vecPos;
+        osg::Vec3d pos = getPos(ea, aa, vecPos);
+
+        std::stringstream ss;
+        ss.precision(10);
+        ss << vecPos.x() << std::endl;
+        std::string str;
+        str = ss.str();
+        ss.str("");
+
+        ss << vecPos.y() << std::endl;
+        std::string str2;
+        str2 = ss.str();
+        ss.str("");
+
+        ss << vecPos.z() << std::endl;
+        std::string str3;
+        str3 = ss.str();
+        ss.str("");
+
+        m_pWin->SetText(str, str2, str3);
+
+        m_pCircleNode->setPosition(	osgEarth::GeoPoint::GeoPoint(spf, vecPos, osgEarth::AltitudeMode::ALTMODE_RELATIVE));
+    }
+    default:
+        return false;
+    }
+}
+
+
+osg::Vec3d PointSuerveyToolEventHandler::getPos(const osgGA::GUIEventAdapter& ea,
+        osgGA::GUIActionAdapter& aa, osg::Vec3d& pos)
+{
+    pos = osg::Vec3d(0, 0, 0);
+    osgViewer::Viewer* pViewer = dynamic_cast<osgViewer::Viewer*>(&aa);
+    if (pViewer == NULL)
+    {
+        return osg::Vec3d(0, 0, 0);
+    }
+    // 获取当前点
+    osgUtil::LineSegmentIntersector::Intersections intersection;
+    double x = ea.getX();
+    double y = ea.getY();
+    pViewer->computeIntersections(ea.getX(), ea.getY(), intersection);
+
+
+    osgUtil::LineSegmentIntersector::Intersections::iterator iter
+    = intersection.begin();
+    if (iter != intersection.end())
+    {
+        m_pEllipsoid->convertXYZToLatLongHeight(
+            iter->getWorldIntersectPoint().x(), iter->getWorldIntersectPoint().y(), iter->getWorldIntersectPoint().z(),
+            pos.y(), pos.x(), pos.z());
+        pos.x() = osg::RadiansToDegrees(pos.x());
+        pos.y() = osg::RadiansToDegrees(pos.y());
+        return iter->getWorldIntersectPoint();
+    }
+    return osg::Vec3d(0, 0, 0);
+}
+
+CvlPointSurvey::CvlPointSurvey(void)
+{
+    std::wstring app = x3::a2w(_getClassName());
+    Name(GETSTRINGW(app.c_str(), L"Name", L"点测量"));
+    Caption(GETSTRINGW(app.c_str(), L"Caption", L"量测工具"));
+    Category(GETSTRINGW(app.c_str(), L"Category", L"主页"));
+    Tooltip(GETSTRINGW(app.c_str(), L"Tooltip", L"点测量"));
+    Description(GETSTRINGW(app.c_str(), L"Description", L"点测量"));
+    BitmapName(GETSTRINGW(app.c_str(), L"BitmapName", L"PointSurvey"));
+    bInSurvey = false;
+}
+
+CvlPointSurvey::~CvlPointSurvey(void)
+{
+}
+
+bool CvlPointSurvey::Initialize()
+{
+    return true;
+}
+
+bool CvlPointSurvey::UnInitialize()
+{
+    return true;
+}
+
+bool CvlPointSurvey::SetBuddy(x3::IObject* val)
+{
+    x3::Object<IViewer3D> spViewer3D(val);
+    if( !spViewer3D.valid() )
+        return false;
+
+    if( m_spBuddy == spViewer3D )
+        return true;
+
+    m_spBuddy = spViewer3D;
+    if( spViewer3D->getViewer() == nullptr )
+        return false;
+
+    //m_pLayerGroup = new osg::Group;
+    //spViewer3D->getMapNode()->addChild(m_pLayerGroup);
+
+    //m_pLayerGroup->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
+    m_pCircleNode = NULL;
+
+    m_circleStyle.getOrCreate<osgEarth::Symbology::PolygonSymbol>()
+    ->fill()->color() = osgEarth::Symbology::Color::Yellow;
+
+    m_circleStyle.getOrCreate<osgEarth::Symbology::AltitudeSymbol>()
+    ->clamping() = osgEarth::Symbology::AltitudeSymbol::CLAMP_TO_TERRAIN;
+
+    m_circleStyle.getOrCreate<osgEarth::Symbology::AltitudeSymbol>()
+    ->technique() = osgEarth::Symbology::AltitudeSymbol::TECHNIQUE_DRAPE;
+
+    m_circleStyle.getOrCreate<osgEarth::Symbology::AltitudeSymbol>()
+    ->verticalOffset() = 0.1;
+
+    m_pPointSurveyInfoWin = new CPointSurveyInfoWin();
+    m_pPointSurveyInfoWin->parent = (CObject*) this;
+    m_pPointSurveyInfoWin->Create(IDD_DIALOG_POINTSURVEY);
+
+    return true;
+}
+
+
+bool CvlPointSurvey::Checked()
+{
+    return bInSurvey;
+}
+
+// IUICommand
+bool CvlPointSurvey::OnClick()
+{
+    x3::Object<IViewer3D> spViewer3D(m_spBuddy);
+
+    if (bInSurvey)
+    {
+        spViewer3D->Lock();
+
+        spViewer3D->getViewer()->removeEventHandler(m_spPointEventHandler.get());
+        m_spPointEventHandler = nullptr;
+
+        m_pPointSurveyInfoWin->ShowWindow(SW_HIDE);
+
+        spViewer3D->Unlock();
+
+        m_pLayerGroup->removeChild(m_pCircleNode);
+        spViewer3D->getMapNode()->removeChild(m_pLayerGroup);
+        m_pLayerGroup = nullptr;
+        m_pCircleNode = nullptr;
+        bInSurvey = false;
+    }
+    else
+    {
+        spViewer3D->Lock();
+
+        m_pLayerGroup = new osg::Group;
+        spViewer3D->getMapNode()->addChild(m_pLayerGroup);
+        m_pLayerGroup->getOrCreateStateSet()->setMode(GL_DEPTH_TEST, osg::StateAttribute::OFF);
+
+        if(m_pCircleNode == nullptr)
+        {
+            osg::Vec3d center =   osg::Vec3d(0, 0, 0);
+
+            m_pCircleNode = new osgEarth::Annotation::CircleNode(
+                spViewer3D->getMapNode(),
+                osgEarth::GeoPoint::GeoPoint(spViewer3D->getMapNode()->getMap()->getSRS(),
+                                             center, osgEarth::AltitudeMode::ALTMODE_RELATIVE),
+                10000,
+                m_circleStyle
+            );
+            m_pLayerGroup->addChild(m_pCircleNode);
+        }
+
+        m_spPointEventHandler = new PointSuerveyToolEventHandler(m_pPointSurveyInfoWin, spViewer3D->getMapNode()->getMap()->getProfile()->getSRS(), m_pCircleNode);
+
+        spViewer3D->getViewer()->addEventHandler( m_spPointEventHandler );
+
+        spViewer3D->Unlock();
+
+        m_pPointSurveyInfoWin->ShowWindow(SW_SHOW);
+
+        RECT r;
+        m_pPointSurveyInfoWin->GetWindowRect(&r);
+
+		int nWidth = r.right - r.left;
+		int nHeight = r.bottom - r.top;
+
+        r.left = spViewer3D->rectView3D.left + 20;
+        r.top = spViewer3D->rectView3D.top + 20;
+		r.right = r.left+nWidth;
+		r.bottom = r.top + nHeight;
+
+		m_pPointSurveyInfoWin->MoveWindow(&r);
+
+        bInSurvey = true;
+    }
+    return true;
+}
+

@@ -1,0 +1,186 @@
+#include "stdafx.h"
+#include "vlOpenProject.h"
+#include "EarthMatrixFunctions.h"
+#include "osgDB/ReadFile"
+#include "osgDB/FileNameUtils"
+#include "osgUtil/Optimizer"
+#include "IViewer3D.h"
+#include "osgDB/FileUtils"
+
+CvlOpenProject::CvlOpenProject(void)
+{
+    std::wstring app = x3::a2w(_getClassName());
+    Name(GETSTRINGW(app.c_str(), L"Name", L"打开项目"));
+    Caption(GETSTRINGW(app.c_str(), L"Caption", L"项目管理"));
+    Category(GETSTRINGW(app.c_str(), L"Category", L"主页"));
+    Tooltip(GETSTRINGW(app.c_str(), L"Tooltip", L"打开项目"));
+    Description(GETSTRINGW(app.c_str(), L"Description", L"打开项目"));
+    BitmapName(GETSTRINGW(app.c_str(), L"BitmapName", L"OpenProject"));
+}
+
+CvlOpenProject::~CvlOpenProject(void)
+{
+}
+
+bool CvlOpenProject::Initialize()
+{
+    return true;
+}
+
+bool CvlOpenProject::UnInitialize()
+{
+    return true;
+}
+
+bool CvlOpenProject::SetBuddy(x3::IObject* val)
+{
+    x3::Object<IViewer3D> spViewer3D(val);
+    if( !spViewer3D.valid() )
+        return false;
+
+    if( m_spBuddy == spViewer3D )
+        return true;
+
+    m_spBuddy = spViewer3D;
+    if( spViewer3D->getViewer() == nullptr )
+        return false;
+
+    return true;
+}
+
+// IUICommand
+bool CvlOpenProject::OnClick()
+{
+    USES_CONVERSION;
+    IUICommand::Enable(false);
+    Checked(true);
+
+    x3::Object<IViewer3D> spViewer3D(m_spBuddy);
+    if( !spViewer3D.valid() )
+        return false;
+
+    CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, L"DRV Project File(*.drvp)|*.drvp||", NULL);
+
+    if(dlg.DoModal() == IDOK)
+    {
+        CString sProjPath = dlg.GetPathName();
+        if ( !osgDB::fileExists( W2A(sProjPath.GetBuffer(0)) ) )
+        {
+            CString strFileNotExist(GETSTRINGT(L"Project", _T("OpenFileNotExist"), _T("项目文件不存在，请重新选择！")));
+            AfxMessageBox(strFileNotExist);
+        }
+        else
+        {
+            spViewer3D->SetProjectFilePath(sProjPath);
+            OpenProject();
+        }
+    }
+    else
+    {
+
+    }
+
+    Checked(false);
+    IUICommand::Enable(true);
+    return true;
+}
+
+void CvlOpenProject::OpenProject()
+{
+    USES_CONVERSION;
+
+    x3::Object<IViewer3D> spViewer3D(m_spBuddy);
+    if( !spViewer3D.valid() )
+        return;
+
+    rapidxml::file<> fdoc(W2A(spViewer3D->GetProjectFilePath().GetBuffer(0)));
+
+    rapidxml::xml_document<> doc;
+    doc.parse<0>(fdoc.data());
+
+    //! 获取根节点
+    rapidxml::xml_node<>* root = doc.first_node();
+
+    //! 获取根节点第一个节点
+    rapidxml::xml_node<>* node = root->first_node("Layers");
+
+    xml_node<>* nodeLayer = node->first_node();
+    while (nodeLayer)
+    {
+		CString sLayerPath =  CString(nodeLayer->value());
+#ifdef _2D
+
+		std::string filename = nodeLayer->value();
+		std::string FilePath = filename.substr( 0, filename.find_last_of( '\\' ) );
+		std::string FileNameEx = filename.substr(filename.find_last_of( '\\' )+1);
+		std::string FileNameNoEx = FileNameEx.substr(0, FileNameEx.find_last_of( '.' ));
+
+		osg::ref_ptr<osg::Node> spNode = osgDB::readNodeFile(filename);
+
+		if( spNode.valid() )
+		{
+					spNode->setName(FileNameNoEx);
+
+		spViewer3D->AddNode(spNode.get(),nullptr);
+		spViewer3D->GetLayersArray()->Add(sLayerPath);
+#else
+		spViewer3D->OpenFile(nodeLayer->value(), nullptr);
+#endif // _2D
+	}
+
+
+		nodeLayer = nodeLayer->next_sibling();
+    }
+
+	//! 获取根节点第一个节点
+	node = root->first_node("Paths");
+	if (node)
+	{
+		nodeLayer = node->first_node();
+		while (nodeLayer)
+		{
+			CString sLayerPath =  CString(nodeLayer->value());
+
+			spViewer3D->GetPathsArray()->Add(sLayerPath);
+
+			nodeLayer = nodeLayer->next_sibling();
+		}
+	}
+
+	node = root->first_node("DisplaySetting");
+	if (node)
+	{
+		nodeLayer = node->first_node("OSG_MAX_PAGEDLOD");
+		if (nodeLayer != NULL)
+		{
+			int nNum = atoi(nodeLayer->value());
+			if (nNum != 0)
+			{
+				spViewer3D->SetOSG_MAX_PAGEDLOD(nNum);
+			}
+		}
+		
+
+		nodeLayer = node->first_node("OSG_NUM_DATABASE_THREADS");
+		if (nodeLayer != NULL)
+		{
+			int nNum = atoi(nodeLayer->value());
+			if (nNum != 0)
+			{
+				spViewer3D->SetOSG_NUM_DATABASE_THREADS(nNum);
+			}
+		}
+
+		nodeLayer = node->first_node("SCREEN_NUM");
+		if (nodeLayer != NULL)
+		{
+			int nNum = atoi(nodeLayer->value());
+			if (nNum != 0)
+			{
+				spViewer3D->SetScreenNum(nNum);
+			}
+		}
+	}
+	
+}
+

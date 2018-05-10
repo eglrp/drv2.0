@@ -1,0 +1,429 @@
+#include "stdafx.h"
+#include "vlPointSelect.h"
+#include "EarthMatrixFunctions.h"
+#include "osgDB/ReadFile"
+#include "osgDB/FileNameUtils"
+#include "osgUtil/Optimizer"
+#include <osg/ShapeDrawable>
+#include <osg/MatrixTransform>
+#include "IViewer3D.h"
+#include <osg/StateSet>
+#include <osgEarthSymbology/Geometry>
+#include <osgEarthDrivers/feature_ogr/OGRFeatureOptions>
+
+#include "resource.h"
+
+void PickModelHandler::Init()
+{
+    _selection = new osgManipulator::Selection;
+
+    _draggerTranslate = new osgManipulator::TranslateAxisDragger;
+    _draggerScale = new osgManipulator::ScaleAxisDragger;
+    _draggerRotate = new osgManipulator::RotateSphereDragger;
+    _dragger = _draggerTranslate.get();
+
+    _draggerTranslate->setupDefaultGeometry();
+    _draggerScale->setupDefaultGeometry();
+    _draggerRotate->setupDefaultGeometry();
+
+    _draggerTranslate->setNodeMask( 0 );
+    _draggerScale->setNodeMask( 0 );
+    _draggerRotate->setNodeMask( 0 );
+
+    _manager = new osgManipulator::CommandManager;
+    _manager->connect( *_dragger, *_selection );
+
+    _selectType = MODEL;
+    _operationType = TRANSLATE;
+}
+
+bool PickModelHandler::handle( const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa )
+{
+    osgViewer::View* view = dynamic_cast<osgViewer::View*>( &aa );
+    if( !view )
+        return false;
+
+    if( !_enablePick )
+        return view->getCameraManipulator()->handle( ea, aa );
+
+    switch( ea.getEventType() )
+    {
+    case osgGA::GUIEventAdapter::PUSH:
+        return SelectNode( ea, aa );
+        break;
+
+    case osgGA::GUIEventAdapter::DRAG:
+    case osgGA::GUIEventAdapter::RELEASE:
+        return DragNode( ea, aa );
+        break;
+
+    default:
+        break;
+    }
+    return false;
+}
+
+bool PickModelHandler::SelectNode( const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa )
+{
+    osgViewer::View* view = dynamic_cast<osgViewer::View*>( &aa );
+    _pointer.reset();
+    TestOperationType();
+    osgUtil::LineSegmentIntersector::Intersections hits;
+    if( view->computeIntersections( ea.getX(), ea.getY(), hits ) )
+    {
+        _pointer.setCamera( view->getCamera() );
+        _pointer.setMousePosition( ea.getX(), ea.getY() );
+        osgUtil::LineSegmentIntersector::Intersections::iterator hitr;
+        for( hitr = hits.begin(); hitr != hits.end(); ++hitr )
+        {
+			osg::Vec3d v3d = hitr->getLocalIntersectPoint();
+            _pointer.addIntersection( hitr->nodePath, hitr->getLocalIntersectPoint() );
+        }
+        osg::NodePath::iterator itr;
+        for( itr = _pointer._hitList.front().first.begin(); itr != _pointer._hitList.front().first.end(); ++itr )
+        {
+            if( !_hasSelected )
+            {
+                switch( _selectType )
+                {
+                case GEOD:
+                {
+                    osg::ref_ptr<osg::Geode> gode = dynamic_cast<osg::Geode*>( *itr );
+                    if( gode )
+                    {
+                        /*
+                        float scale = gode->computeBound().radius() * 1.6;
+                        _selection->setMatrix( osg::Matrix::identity() );
+                        _dragger->setMatrix( osg::Matrix::scale( scale, scale, scale ) *
+                        	osg::Matrix::translate( gode->computeBound().center() ) );
+                        gode->getParent( 0 )->addChild( _selection.get() );
+                        gode->getParent( 0 )->addChild( _dragger.get() );
+                        _selection->addChild( gode.get() );
+                        gode->getParent( 0 )->removeChild( gode.get() );
+                        _dragger->setNodeMask( 1 );
+                        _hasSelected = true;
+                        */
+                        float scale = gode->computeBound().radius() * 1;
+                        osg::Vec3f f3 = gode->computeBound().center();
+                        AddCylinderNode(f3.x(), f3.y(), f3.z(), scale);
+						_hasSelected = true;
+                        return true;
+                    }
+                }
+                break;
+
+                case MODEL:
+                {
+                    osg::ref_ptr<osg::Group> group = dynamic_cast<osg::Group*>( *itr );
+                    if( group )
+                    {
+                        if( group->getName() == "MODEL" )
+                        {
+                            float scale = group->computeBound().radius() * 1.6;
+                            _selection->setMatrix( osg::Matrix::identity() );
+                            _dragger->setMatrix( osg::Matrix::scale( scale, scale, scale ) *
+                                                 osg::Matrix::translate( group->computeBound().center() ) );
+                            group->getParent( 0 )->addChild( _selection.get() );
+                            group->getParent( 0 )->addChild( _dragger.get() );
+                            _selection->addChild( group.get() );
+                            group->getParent( 0 )->removeChild( group.get() );
+                            _dragger->setNodeMask( 1 );
+                            _hasSelected = true;
+                            return true;
+                        }
+                    }
+                }
+                break;
+                }
+            }
+            else
+            {
+                osgManipulator::Dragger* dragger = dynamic_cast<osgManipulator::Dragger*>( *itr );
+                if( dragger )
+                {
+                    dragger->handle( _pointer, ea, aa );
+                    _activeDragger = dragger;
+                    return true;
+                }
+            }
+        }
+    }
+    else
+    {
+        _draggerTranslate->setNodeMask( 0 );
+        _draggerRotate->setNodeMask( 0 );
+        _draggerScale->setNodeMask( 0 );
+        _hasSelected = false;
+        if( _selection->getNumChildren() != 0 )
+        {
+            osg::MatrixTransform* mt = dynamic_cast<osg::MatrixTransform*>( _selection->getParent( 0 ) );
+            if( mt )
+            {
+                mt->setMatrix( mt->getMatrix() * _selection->getMatrix() );
+                mt->removeChild( _selection.get() );
+                mt->removeChild( _dragger.get() );
+                mt->addChild( _selection->getChild( 0 ) );
+                _selection->removeChild( _selection->getChild( 0 ) );
+            }
+            else
+            {
+                osg::MatrixTransform* mt = new osg::MatrixTransform;
+                mt->setMatrix( _selection->getMatrix() );
+                _selection->getParent( 0 )->addChild( mt );
+                _selection->getParent( 0 )->removeChild( _dragger.get() );
+                _selection->getParent( 0 )->removeChild( _selection.get() );
+                mt->addChild( _selection->getChild( 0 ) );
+                _selection->removeChild( _selection->getChild( 0 ) );
+            }
+        }
+        return view->getCameraManipulator()->handle( ea, aa );
+    }
+    return false;
+}
+
+bool PickModelHandler::DragNode( const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa )
+{
+    osgViewer::View* view = dynamic_cast<osgViewer::View*>( &aa );
+    if( _activeDragger )
+    {
+        _pointer._hitIter = _pointer._hitList.begin();
+        _pointer.setCamera( view->getCamera() );
+        _pointer.setMousePosition( ea.getX(), ea.getY() );
+        _activeDragger->handle( _pointer, ea, aa );
+        if( ea.getEventType() == osgGA::GUIEventAdapter::RELEASE )
+        {
+            _activeDragger = NULL;
+            _pointer.reset();
+        }
+        return true;
+    }
+    else
+        return view->getCameraManipulator()->handle( ea, aa );
+}
+
+void PickModelHandler::SetOperationType( OPERATION type )
+{
+    if( !_hasSelected )
+        _operationType = type;
+}
+
+void PickModelHandler::TestOperationType()
+{
+    _manager->disconnect( *_dragger );
+    switch( _operationType )
+    {
+    case TRANSLATE:
+        _dragger = _draggerTranslate.get();
+        break;
+    case ROTATE:
+        _dragger = _draggerRotate.get();
+        break;
+    case SCALE:
+        _dragger = _draggerScale.get();
+        break;
+    }
+    _manager->connect( *_dragger, *_selection );
+}
+
+bool PickModelHandler::SetBuddy(x3::IObject* val)
+{
+    m_spViewer3D = (IViewer3D*)val;
+    return true;
+}
+
+void PickModelHandler::AddCylinderNode(double x, double y, double z, double r)
+{
+    USES_CONVERSION;
+
+    osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+    osg::ref_ptr<osg::ShapeDrawable> shape;
+
+    osg::ref_ptr<osg::TessellationHints> hints = new osg::TessellationHints;
+    hints->setDetailRatio(2.0f);
+
+    shape = new osg::ShapeDrawable(new osg::Cylinder(osg::Vec3(x, y, z), r, r), hints.get());
+    shape->setColor(osg::Vec4(0.6f, 0.8f, 0.8f, 0.6f));
+    geode->addDrawable(shape.get());
+
+    osg::StateSet* ss = geode->getOrCreateStateSet();
+    ss->setMode(GL_BLEND, osg::StateAttribute::ON);
+    ss->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+
+    CString s;
+    s.Format(_T("圆柱体%f"), r);
+    geode->setName(W2A(s.GetBuffer(0)));
+
+    m_spViewer3D->AddNode(geode.get());
+}
+
+void PickModelHandler::AddPolygonNode(osg::Vec3Array* arr)
+{
+	USES_CONVERSION;
+
+	osg::ref_ptr<osg::Vec4Array> shared_colors = new osg::Vec4Array;
+	shared_colors->push_back(osg::Vec4(1.0f,1.0f,0.0f,0.6f));
+
+	// same trick for shared normal.
+	osg::ref_ptr<osg::Vec3Array> shared_normals = new osg::Vec3Array;
+	shared_normals->push_back(osg::Vec3(0.0f,-1.0f,0.0f));
+
+	osg::ref_ptr<osg::Geode> geode = new osg::Geode;
+	osg::Geometry* polyGeom = new osg::Geometry();
+
+	int numCoords = sizeof(arr)/sizeof(osg::Vec3);
+	polyGeom->setVertexArray(arr);
+
+	polyGeom->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::POLYGON,0,numCoords));
+
+	// use the shared color array.
+	polyGeom->setColorArray(shared_colors.get(), osg::Array::BIND_OVERALL);
+
+
+	// use the shared normal array.
+	polyGeom->setNormalArray(shared_normals.get(), osg::Array::BIND_OVERALL);
+
+	CString s;
+	s.Format(_T("面%f"), r);
+	geode->setName(W2A(s.GetBuffer(0)));
+
+	osg::StateSet* ss = geode->getOrCreateStateSet();
+	ss->setMode(GL_BLEND, osg::StateAttribute::ON);
+	ss->setRenderingHint(osg::StateSet::TRANSPARENT_BIN);
+
+	m_spViewer3D->AddNode(geode.get());
+}
+
+CString PickModelHandler::FindSHPFile()
+{
+	CStringArray* a = m_spViewer3D->GetLayersArray();
+	for (int i=0; i < a->GetCount(); i++)
+	{
+		if (a->GetAt(i).Right(4) == L".shp")
+		{
+			return a->GetAt(i);
+		}
+	}
+	return L"";
+}
+
+void PickModelHandler::MakeBuilding3DBorder(osg::Vec3d vi)
+{
+	USES_CONVERSION;
+	osgEarth::Drivers::OGRFeatureOptions ogrOpt;
+	std::string path = W2A(FindSHPFile());
+	if (path.length() == 0)
+	{
+		return;
+	}
+	ogrOpt.url() = path;
+
+	osg::ref_ptr<osgEarth::Features::FeatureSource> features = osgEarth::Features::FeatureSourceFactory::create(ogrOpt);
+	features->initialize();
+
+	osg::ref_ptr<osgEarth::Features::FeatureCursor> cursor = features->createFeatureCursor();
+
+	while(cursor->hasMore())
+	{
+		//输出feature中的信息
+		osgEarth::Features::Feature* feature = cursor->nextFeature();
+		osgEarth::Symbology::GeometryIterator parts (feature->getGeometry(), false);
+
+		//std::string sHeight = feature->getString("Elevation");
+		//double height = atof(sHeight.data());
+
+		while(parts.hasMore())
+		{
+			osgEarth::Symbology::Geometry* part = parts.next();
+			osg::ref_ptr<osg::Vec3Array> allPoints = new osg::Vec3Array;
+
+			allPoints = part->toVec3Array();
+			
+			Vec3dVector* vv = new Vec3dVector();
+
+			for( osg::Vec3Array::iterator i = allPoints->begin(); i != allPoints->end(); ++i )
+			{
+				osg::Vec3d v(*i);
+				vv->push_back(v);
+			}
+
+			osgEarth::Symbology::Ring r(vv);
+			if (r.contains2D(vi.x(), vi.y()))
+			{
+
+			}
+		}
+	}
+}
+
+//////////////////////////////////////////////////////////////////////////
+CvlPointSelect::CvlPointSelect(void)
+{
+    std::wstring app = x3::a2w(_getClassName());
+    Name(GETSTRINGW(app.c_str(), L"Name", L"点选择"));
+    Caption(GETSTRINGW(app.c_str(), L"Caption", L"量测工具"));
+    Category(GETSTRINGW(app.c_str(), L"Category", L"主页"));
+    Tooltip(GETSTRINGW(app.c_str(), L"Tooltip", L"点选择"));
+    Description(GETSTRINGW(app.c_str(), L"Description", L"点选择"));
+    BitmapName(GETSTRINGW(app.c_str(), L"BitmapName", L"PointSurvey"));
+    bInSurvey = false;
+}
+
+CvlPointSelect::~CvlPointSelect(void)
+{
+}
+
+bool CvlPointSelect::Initialize()
+{
+    return true;
+}
+
+bool CvlPointSelect::UnInitialize()
+{
+    return true;
+}
+
+bool CvlPointSelect::SetBuddy(x3::IObject* val)
+{
+    x3::Object<IViewer3D> spViewer3D(val);
+    if( !spViewer3D.valid() )
+        return false;
+
+    if( m_spBuddy == spViewer3D )
+        return true;
+
+    m_spBuddy = spViewer3D;
+    if( spViewer3D->getViewer() == nullptr )
+        return false;
+
+    m_val = val;
+    return true;
+}
+
+
+bool CvlPointSelect::Checked()
+{
+    return bInSurvey;
+}
+
+// IUICommand
+bool CvlPointSelect::OnClick()
+{
+    x3::Object<IViewer3D> spViewer3D(m_spBuddy);
+
+    if (bInSurvey)
+    {
+        spViewer3D->getViewer()->removeEventHandler( pickhandler.get() );
+        bInSurvey = false;
+    }
+    else
+    {
+        pickhandler = new PickModelHandler();
+        pickhandler->EnableSelect(true);
+        pickhandler->SetSelectType(PickModelHandler::SELECT::GEOD);
+        pickhandler->SetBuddy(m_val);
+        spViewer3D->getViewer()->addEventHandler( pickhandler.get() );
+        bInSurvey = true;
+    }
+    return true;
+}
+
