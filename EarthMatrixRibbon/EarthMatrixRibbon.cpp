@@ -101,7 +101,7 @@ BOOL CEarthMatrixRibbonApp::InitInstance()
 	CWinAppEx::InitInstance();
 #ifdef _LOCK
 	int a = CheckModule(78,0);
-	//a=1;
+	a=1;
 	if (a)
 	{
 		
