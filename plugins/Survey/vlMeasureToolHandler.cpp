@@ -429,6 +429,8 @@ void CvlMeasureToolHandler::fireDistanceChanged()
     double distance1 = 0;
     double distance2 = 0;
     double distance = 0;
+	double height = 0;
+	double disXY = 0;
     if( _vertices.valid() )
     {
         if( _isPath )

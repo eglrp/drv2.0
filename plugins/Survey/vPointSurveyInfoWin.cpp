@@ -34,14 +34,14 @@ void CPointSurveyInfoWin::SetText(std::string xtext, std::string ytext, std::str
 	}
 
     CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_X);
-    pEdit->SetWindowTextW(CString(xtext.c_str()));
+    pEdit->SetWindowTextW(CString((xtext + ","+ ytext + "," + ztext).c_str()));
 
-    CEdit* pEdit2 = (CEdit*)GetDlgItem(IDC_EDIT_Y);
+   /* CEdit* pEdit2 = (CEdit*)GetDlgItem(IDC_EDIT_Y);
     pEdit2->SetWindowTextW(CString(ytext.c_str()));
 
 
     CEdit* pEdit3 = (CEdit*)GetDlgItem(IDC_EDIT_Z);
-    pEdit3->SetWindowTextW(CString(ztext.c_str()));
+    pEdit3->SetWindowTextW(CString(ztext.c_str()));*/
 
 	CEdit* pEditAll = (CEdit*)GetDlgItem(IDC_EDIT_ALL);
 
