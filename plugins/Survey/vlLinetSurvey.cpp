@@ -71,7 +71,7 @@ bool LineSurveyEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUI
 			double d1 = (vec[0] - vec[1]).length();
 			double h = abs(vec[0].z() - vec[1].z());
 			double d2 = (osg::Vec3d(vec[0].x(),vec[0].y(),0) - osg::Vec3d(vec[1].x(),vec[1].y(),0)).length();
-			m_pLineSurveyInfoWin->SetDist(d2,h,d1);
+			setDis(d2,h,d1);
 		}
 		else if (vecCoord.size() == 2)
 		{
@@ -79,7 +79,7 @@ bool LineSurveyEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUI
 			double d1 = (vecCoord[0] - vecCoord[1]).length();
 			double h = abs(vecCoord[0].z() - vecCoord[1].z());
 			double d2 = (osg::Vec3d(vecCoord[0].x(),vecCoord[0].y(),0) - osg::Vec3d(vecCoord[1].x(),vecCoord[1].y(),0)).length();
-			m_pLineSurveyInfoWin->SetDist(d2,h,d1);
+			setDis(d2,h,d1);
 		}
 	}
 	return false;
@@ -139,12 +139,14 @@ LineSurveyEventHandler::LineSurveyEventHandler(osg::Group* group,CvZLineSurveyIn
 	_group = group;
 	lineGroup = new osg::Group();
 	_group->addChild(lineGroup);
+	m_pLineSurveyInfoWin = pWin;
+	
 }
 
 void LineSurveyEventHandler::setDis(double d1,double d2,double h)
 {
 	char msg[999];
-	sprintf_s(msg,"水平距离：%f (米)\n高度：%f (米)\n直线距离：%f (米)",d1,h,d2);
+	sprintf_s(msg,"水平距离：%f (米)\r\n高度：%f (米)\r\n直线距离：%f (米)",d1,h,d2);
 	CEdit* pEdit = (CEdit*)m_pLineSurveyInfoWin->GetDlgItem(IDC_EDIT_LINESURVEY_DIST);
 	pEdit->SetWindowTextW(CString(msg));
 }
@@ -224,7 +226,11 @@ bool CvlLineSurvey::Activate()
 		m_pLineSurveyInfoWin->parent = (CObject*) this;
 		m_pLineSurveyInfoWin->Create(IDD_DIALOG_LINESURVEY);
 	}
-
+	else
+	{
+		CEdit* pEdit = (CEdit*)m_pLineSurveyInfoWin->GetDlgItem(IDC_EDIT_LINESURVEY_DIST);
+		pEdit->SetWindowTextW(L"");
+	}
 	x3::Object<IViewer3D> spViewer3D(m_spBuddy);
 	//spViewer3D->Lock();
 
@@ -233,7 +239,7 @@ bool CvlLineSurvey::Activate()
 #else
 	m_spLineSurveyEventHandler = new LineSurveyEventHandler(spViewer3D->getRootNode()->asGroup(),m_pLineSurveyInfoWin);    
 #endif
-
+	spViewer3D->getViewer()->addEventHandler(m_spLineSurveyEventHandler.get());
 	
 
 	m_pLineSurveyInfoWin->ShowWindow(SW_SHOW);
