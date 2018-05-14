@@ -42,7 +42,37 @@ bool LineSurveyEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUI
 	if (!viewer)
 		return false;
 
-	if(ea.getEventType() == osgGA::GUIEventAdapter::PUSH && ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
+	if (ea.getEventType() == osgGA::GUIEventAdapter::PUSH && ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
+	{
+		_mouseDown = true;
+		_mouseDownX = ea.getX();
+		_mouseDownY = ea.getY();
+	}
+	else if (ea.getEventType() == osgGA::GUIEventAdapter::RELEASE && ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
+	{
+		float eps = 1.0f;
+
+		if(_mouseDown)
+			_mouseDown = false;
+		else
+			return false;
+		if (osg::equivalent(ea.getX(), _mouseDownX) && osg::equivalent(ea.getY(), _mouseDownY))
+		{
+			osg::Vec3d vecPos;
+			getPos(ea, aa, vecPos);
+			if (vecPos != osg::Vec3d(0,0,0))
+			{
+				if (vecCoord.size() < 2)
+					vecCoord.push_back(vecPos);
+				else 
+				{
+					vecCoord.clear();
+					vecCoord.push_back(vecPos);
+				}
+			}
+		}
+	}
+	/*if(ea.getEventType() == osgGA::GUIEventAdapter::PUSH && ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
 	{
 		osg::Vec3d vecPos;
 		getPos(ea, aa, vecPos);
@@ -57,7 +87,7 @@ bool LineSurveyEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUI
 			}
 		}
 		
-	}
+	}*/
 	else if(ea.getEventType() == osgGA::GUIEventAdapter::MOVE)
 	{
 		osg::Vec3d vecPos;
@@ -140,6 +170,7 @@ LineSurveyEventHandler::LineSurveyEventHandler(osg::Group* group,CvZLineSurveyIn
 	lineGroup = new osg::Group();
 	_group->addChild(lineGroup);
 	m_pLineSurveyInfoWin = pWin;
+	_mouseDown = false;
 	
 }
 

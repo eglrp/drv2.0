@@ -24,6 +24,8 @@ public:
 	~LineSurveyEventHandler(){};
 
 public:
+	bool _mouseDown;
+	float _mouseDownX, _mouseDownY;
 	osg::Vec3d mlastPt;
 	osg::ref_ptr< osg::Group > _group;
 	osg::ref_ptr< osg::Group > lineGroup;
