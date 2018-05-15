@@ -25,7 +25,7 @@ public:
 	CAreaSurveyDlg* m_pWin;
 };
 
-const char* const clsidvlLineSurveyArea = "00000000-4900-1000-0000-000000000002";
+const char* const clsidvlLineSurveyArea = "00000000-4900-1000-0000-000000000003";
 class CvlLineSurveyArea : public IUICommon, public IUICommand, public IUITool
 {
 	X3BEGIN_CLASS_DECLARE(CvlLineSurveyArea, clsidvlLineSurveyArea)		

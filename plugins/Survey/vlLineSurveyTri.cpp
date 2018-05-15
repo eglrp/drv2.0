@@ -20,11 +20,11 @@ void MyMeasureToolEventHandler::onDistanceChanged(CvlMeasureToolHandler* sender,
 CvlLineSurveyTri::CvlLineSurveyTri(void)
 {
 	std::wstring app = x3::a2w(_getClassName());
-	Name(GETSTRINGW(app.c_str(), L"Name", L"线测量"));
+	Name(GETSTRINGW(app.c_str(), L"Name", L"多线测量"));
 	Caption(GETSTRINGW(app.c_str(), L"Caption", L"空间量测"));
 	Category(GETSTRINGW(app.c_str(), L"Category", L"主页"));
-	Tooltip(GETSTRINGW(app.c_str(), L"Tooltip", L"线测量-考虑斜坡"));
-	Description(GETSTRINGW(app.c_str(), L"Description", L"线测量"));
+	Tooltip(GETSTRINGW(app.c_str(), L"Tooltip", L"多线测量"));
+	Description(GETSTRINGW(app.c_str(), L"Description", L"多线测量"));
 	BitmapName(GETSTRINGW(app.c_str(), L"BitmapName", L"LineSurveyTri")); 
 
 	bInSurvey = false;
