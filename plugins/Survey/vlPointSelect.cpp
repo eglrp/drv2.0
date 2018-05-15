@@ -87,16 +87,6 @@ double PointToSegDist(double x, double y, double x1, double y1, double x2, doubl
 	double d1 = sqrt((x - x1) * (x - x1) + (y - y1) * (y - y1));
 	double d2 = sqrt((x - x2) * (x - x2) + (y - y2) * (y - y2));
 	return d1>d2?d2:d1;
-	/*double cross = (x2 - x1) * (x - x1) + (y2 - y1) * (y - y1);  
-	if (cross <= 0) return sqrt((x - x1) * (x - x1) + (y - y1) * (y - y1));  
-
-	double d2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);  
-	if (cross >= d2) return sqrt((x - x2) * (x - x2) + (y - y2) * (y - y2));  
-
-	double r = cross / d2;  
-	double px = x1 + (x2 - x1) * r;  
-	double py = y1 + (y2 - y1) * r;  
-	return sqrt((x - px) * (x - px) + (py - y1) * (py - y1));  */
 }  
 
 using namespace osgEarth::Features;
@@ -178,11 +168,6 @@ bool PickModelHandler::SelectNode( const osgGA::GUIEventAdapter &ea, osgGA::GUIA
     osgViewer::View* view = dynamic_cast<osgViewer::View*>( &aa );
     _pointer.reset();
     TestOperationType();
-	//if (m_sDefLayer.Find(L".dxf") != -1 || m_sDefLayer.Find(L".DXF") != -1)//如果默认图层是dxf  ，则不需要碰撞点
-	//{
-	//	MakeBuilding3DBorder(osg::Vec3(eaX,eaY,0));
-	//	return false;
-	//}
 	firstPt = osg::Vec3d(0,0,0);
     osgUtil::LineSegmentIntersector::Intersections hits;
     if( m_spViewer3D->getViewer()->computeIntersections( ea.getX(), ea.getY(), hits ) )
@@ -429,16 +414,11 @@ CString PickModelHandler::FindSHPFile()
 {
 	USES_CONVERSION;
 	CStringArray* a = m_spViewer3D->GetLayersArray();
-	CString cs;
-	for (int i = 0; i < a->GetCount(); i++)
-	{
-		cs = a->GetAt(i);
-	}
 	if (m_sDefLayer == _T(""))
 	{
 		for (int i = 0; i < a->GetCount(); i++)
 		{
-			if (a->GetAt(i).Right(4) == L".shp")
+			if (a->GetAt(i).Right(4) == L".shp" || a->GetAt(i).Right(4) == L".SHP")
 			{
 				return a->GetAt(i);
 			}
@@ -447,7 +427,8 @@ CString PickModelHandler::FindSHPFile()
 	}
 	else
 	{
-		if (string(W2A(m_sDefLayer)).find(".shp") == -1)
+		if (string(W2A(m_sDefLayer)).find(".shp") == -1 &&
+			string(W2A(m_sDefLayer)).find(".SHP") == -1)
 		{
 			return L"";
 		}
