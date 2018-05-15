@@ -25,7 +25,7 @@ public:
 	CvZLineSurveyInfoWin* m_pWin;
 };
 
-const char* const clsidvlLineSurveyTri = "00000000-4900-1000-0000-000000000001";
+const char* const clsidvlLineSurveyTri = "00000000-4900-1000-0000-000000000002";
 class CvlLineSurveyTri : public IUICommon, public IUICommand, public IUITool
 {
 	X3BEGIN_CLASS_DECLARE(CvlLineSurveyTri, clsidvlLineSurveyTri)		

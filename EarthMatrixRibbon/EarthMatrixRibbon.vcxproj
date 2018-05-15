@@ -203,6 +203,7 @@
     <IntDir>$(PlatformShortName)\$(Configuration)\</IntDir>
     <OutDir>..\..\bin_drv\$(PlatformName)\$(Configuration)\</OutDir>
     <TargetName>实景三维评审评估系统</TargetName>
+    <EmbedManifest>false</EmbedManifest>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release_2D_Debug|x64'">
     <LinkIncremental>false</LinkIncremental>
