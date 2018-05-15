@@ -147,6 +147,9 @@
     <ClInclude Include="DLGHouseVisiableSurvey.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="DLGTab1.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -249,6 +252,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="DLGHouseVisiableSurvey.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DLGTab1.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

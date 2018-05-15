@@ -400,6 +400,7 @@
     <ClInclude Include="DlgAttInfoEx.h" />
     <ClInclude Include="DLGHouseVisiableSurvey.h" />
     <ClInclude Include="DLGInternetInfo.h" />
+    <ClInclude Include="DLGTab1.h" />
     <ClInclude Include="exportVector.h" />
     <ClInclude Include="HouseVisiableSurvey.h" />
     <ClInclude Include="HtmlDlg.h" />
@@ -438,6 +439,7 @@
     <ClCompile Include="DlgAttInfoEx.cpp" />
     <ClCompile Include="DLGHouseVisiableSurvey.cpp" />
     <ClCompile Include="DLGInternetInfo.cpp" />
+    <ClCompile Include="DLGTab1.cpp" />
     <ClCompile Include="exportVector.cpp" />
     <ClCompile Include="HouseVisiableSurvey.cpp" />
     <ClCompile Include="HtmlDlg.cpp" />
