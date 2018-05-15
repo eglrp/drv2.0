@@ -18,9 +18,10 @@
 #include "osgQueryVisitor.h"
 #include "osgText/Text"
 #include "osgText/Font"
-
+#include <osgUtil/IntersectVisitor>
+#include <osg/LineSegment>
 #include <osgViewer/Renderer>
-
+#include <fstream>
 extern std::string s_manHole;
 extern std::string s_smokeSensor;
 extern std::string s_doorSensor;
@@ -187,7 +188,8 @@ bool PickModelHandler::SelectNode( const osgGA::GUIEventAdapter &ea, osgGA::GUIA
 			else
 			{
 				firstPt = hitPt;
-				MakeBuilding3DBorder(firstPt);
+				//MakeBuilding3DBorder(firstPt);
+				getVisiableBuilding(firstPt);
 				break;
 			}
         }
@@ -883,6 +885,181 @@ osg::ref_ptr<osg::Billboard> PickModelHandler::createText(osg::Vec3d pos,osg::Ve
 	geode->addDrawable(text);
 	geode->setPosition(0,pos);
 	return geode;
+}
+
+void PickModelHandler::getVisiableBuilding(osg::Vec3d vi)
+{
+	USES_CONVERSION;
+	int numVisiableBuilding = 0;
+	osgEarth::Drivers::OGRFeatureOptions ogrOpt;
+	std::string path = W2A(FindSHPFile());
+	if(path.empty())
+		return;
+	if (int(path.find('/')) > -1)
+	{
+		CString sProjPath = m_spViewer3D->GetProjectFilePath();
+		CString sProjDir = sProjPath.Left(sProjPath.ReverseFind('\\'));
+		std::string FileNameEx = path.substr(path.find_last_of( '/' )+1);
+
+		path = T2A(sProjDir + _T("\\") + CString(FileNameEx.c_str()));
+	}
+
+	ogrOpt.url() = path;
+	ogrOpt.openWrite() = true;
+
+	osg::ref_ptr<osgEarth::Features::FeatureSource> features = osgEarth::Features::FeatureSourceFactory::create(ogrOpt);
+	features->initialize();
+
+	osg::ref_ptr<osgEarth::Features::FeatureCursor> cursor = features->createFeatureCursor();
+
+	double disMin = 99999;
+	osgEarth::Features::Feature* mfeature;
+	osgEarth::Features::Feature* feature;
+	std::vector<std::vector<osg::Vec3d> > vecLineInsect;
+	std::vector<std::string> vecFloor;
+	std::ofstream file;
+	file.open("d:\\123.txt");
+	while(cursor->hasMore())
+	{
+		//输出feature中的信息
+		feature = cursor->nextFeature();
+		osgEarth::Symbology::GeometryIterator parts (feature->getGeometry(), false);
+		std::string sname = feature->getName();
+		sname = feature->className();
+		std::string sname1 = feature->getString("AcDbEntity");
+		AttributeTable att =  feature->getAttrs();
+		std::string sGC = feature->getString("高程");
+		std::string sDG = feature->getString("底高");
+		std::string sDG2 = feature->getString("顶高");
+		std::string sFloor = feature->getString("Layer");
+		if (sDG2.empty()||sDG.empty()||sGC.empty())
+		{
+			continue;
+		}
+		double gc = atof(sGC.c_str());
+		double dg = atof(sDG.c_str());
+		double dg2 = atof(sDG2.c_str());
+		bool bVisiable = false;
+		while(parts.hasMore())
+		{
+			osgEarth::Symbology::Geometry* part = parts.next();
+			osg::ref_ptr<osg::Vec3Array> allPoints = new osg::Vec3Array;
+
+			allPoints = part->toVec3Array();
+			int kk = allPoints->size();
+			Vec3dVector* vv = new Vec3dVector();
+			osg::ref_ptr< osg::Vec3Array > v3 = new osg::Vec3Array;
+
+			
+			if(allPoints->size()<2)
+				continue;
+			
+			std::vector<osg::Vec3d> vecIntersect;
+			
+			for( osg::Vec3Array::iterator i = allPoints->begin(); i != allPoints->end(); ++i )
+			{
+				osg::Vec3d v(*i);
+				v.z() = (dg + dg2)/2+ gc;
+				bool b = testIntersect(m_spViewer3D->getRootNode()->asGroup(),v,vi,vecIntersect);
+				if (vecIntersect.size()<=2)
+				{
+					bVisiable = true;
+					std::vector<osg::Vec3d> vec;
+					vec.push_back(v);
+					vec.push_back(vi);
+					vecLineInsect.push_back(vec);
+					break;
+				}
+			}
+		}
+		if (bVisiable)
+		{
+			vecFloor.push_back(sFloor);
+			numVisiableBuilding++;
+		}
+	}
+	std::sort(vecFloor.begin(),vecFloor.end());
+	for (int k = 0;k<vecFloor.size();++k)
+	{
+		file<<vecFloor[k]<<std::endl;
+	}
+	file.close();
+	if (gTemp != nullptr)
+	{
+		m_spViewer3D->RemoveNode(gTemp);
+		gTemp = nullptr;
+	}
+	gTemp = new osg::Group;
+	for(int j = 0;j<vecLineInsect.size();++j)
+	{
+		drawLine(gTemp,vecLineInsect[j]);
+	}
+	if (numVisiableBuilding>0)
+	{
+		gTemp->setName("通视线");
+		m_spViewer3D->AddNode(gTemp);
+	}
+}
+
+void PickModelHandler::drawLine(osg::Group* lineGroup,std::vector<osg::Vec3d>& vecInsect)
+{
+	if (vecInsect.size()<2)
+	{
+		return;
+	}
+	/*if (lineGroup->getNumChildren()>0)
+	{
+		lineGroup->removeChildren(0,lineGroup->getNumChildren());
+	}*/
+	
+	osg::ref_ptr<osg::Geode> _geode = new osg::Geode();
+	_geode->setDataVariance(osg::Object::DYNAMIC);
+	_geode->getOrCreateStateSet()->setAttributeAndModes( new osg::LineWidth(2.0f) );
+	_geode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
+	_geode->getOrCreateStateSet()->setMode( GL_DEPTH_TEST, osg::StateAttribute::ON );
+
+	osg::ref_ptr<osg::Geometry> _geometry1 = new osg::Geometry();
+	_geometry1->setDataVariance(osg::Object::DYNAMIC);
+	osg::ref_ptr<osg::Vec4Array> shared_colors = new osg::Vec4Array;
+	shared_colors->push_back(osg::Vec4(1.0f, 1.0f, 0.0f, 1.0f));
+	_geometry1->setColorArray(shared_colors.get(), osg::Array::BIND_PER_PRIMITIVE_SET);
+
+	osg::ref_ptr<osg::Vec3Array> vert1 = new osg::Vec3Array();
+	
+	for (int i = 0;i<vecInsect.size() ;i++)
+	{
+		vert1->push_back(vecInsect[i]);
+	}
+	_geometry1->setVertexArray(vert1.get());
+	_geometry1->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, vert1->size()));
+	_geode->addDrawable(_geometry1);
+	lineGroup->addChild(_geode);
+}
+
+bool PickModelHandler::testIntersect(osg::Group* group,osg::Vec3d p1,osg::Vec3d p2,std::vector<osg::Vec3d>& vecIntersect)
+{
+	bool bIntersect = false;
+	vecIntersect.clear();
+	//碰撞检测
+	osg::ref_ptr<osgUtil::LineSegmentIntersector> ls = new osgUtil::LineSegmentIntersector(p1, p2);
+	// 创建一个IV
+	osgUtil::IntersectionVisitor iv(ls);
+	// 把线段添加到IV中
+	group->accept(iv);
+	if (ls.valid() && ls->containsIntersections())
+	{
+		bIntersect = true;
+		for (osgUtil::LineSegmentIntersector::Intersections::iterator hitr = ls->getIntersections().begin();
+			hitr != ls->getIntersections().end();++hitr)
+		{
+			osg::Vec3d p = hitr->getWorldIntersectPoint();
+			if ((p-p1).length()>=0.5 && (p-p2).length()>=0.5)
+			{
+				vecIntersect.push_back(p);
+			}	
+		}	
+	}
+	return bIntersect;
 }
 
 void PickModelHandler::MakeBuilding3DBorder(osg::Vec3d vi)
