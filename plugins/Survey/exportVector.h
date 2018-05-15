@@ -33,7 +33,7 @@ public:
 	std::vector<vector<osg::Vec3d>> mvecVertex;
 };
 
-const char* const clsidExportVector = "00000000-4900-1000-0000-000000000004";
+const char* const clsidExportVector = "00000000-4900-1000-0000-000000000005";
 
 class CExportVector : public IUICommon, public IUICommand
 {

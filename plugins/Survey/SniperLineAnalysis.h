@@ -31,7 +31,7 @@ public:
 	osg::ref_ptr< osg::Group > saveGroup;
 };
 
-const char* const clsidSniperLineAnalysis = "00000000-4900-1000-0000-000000000003";
+const char* const clsidSniperLineAnalysis = "00000000-4900-1000-0000-000000000004";
 
 class CSniperLineAnalysis : public IUICommon, public IUICommand, public IUITool
 {

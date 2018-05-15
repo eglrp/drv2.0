@@ -50,8 +50,6 @@ bool LineSurveyEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUI
 	}
 	else if (ea.getEventType() == osgGA::GUIEventAdapter::RELEASE && ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
 	{
-		float eps = 1.0f;
-
 		if(_mouseDown)
 			_mouseDown = false;
 		else
@@ -62,60 +60,32 @@ bool LineSurveyEventHandler::handle(const osgGA::GUIEventAdapter& ea, osgGA::GUI
 			getPos(ea, aa, vecPos);
 			if (vecPos != osg::Vec3d(0,0,0))
 			{
-				if (vecCoord.size() < 2)
-					vecCoord.push_back(vecPos);
-				else 
-				{
+				if (vecCoord.size() >= 2)
 					vecCoord.clear();
-					vecCoord.push_back(vecPos);
-				}
+				vecCoord.push_back(vecPos);	
 			}
 		}
 	}
-	/*if(ea.getEventType() == osgGA::GUIEventAdapter::PUSH && ea.getButton() == osgGA::GUIEventAdapter::LEFT_MOUSE_BUTTON)
-	{
-		osg::Vec3d vecPos;
-		getPos(ea, aa, vecPos);
-		if (vecPos != osg::Vec3d(0,0,0))
-		{
-			if (vecCoord.size() < 2)
-				vecCoord.push_back(vecPos);
-			else 
-			{
-				vecCoord.clear();
-				vecCoord.push_back(vecPos);
-			}
-		}
-		
-	}*/
 	else if(ea.getEventType() == osgGA::GUIEventAdapter::MOVE)
 	{
 		osg::Vec3d vecPos;
 		getPos(ea, aa, vecPos);
-		if (vecCoord.size() == 1 && vecPos.length() > 1)
+		vector<osg::Vec3d> vec;
+		if (vecCoord.size() == 1 && vecPos.length() > 0)
 		{
-			vector<osg::Vec3d> vec;
 			vec.push_back(vecCoord[0]);
 			vec.push_back(vecPos);
-			drawSniperLine(lineGroup,vec);
+			drawLine(lineGroup,vec);
 			double d1 = (vec[0] - vec[1]).length();
 			double h = abs(vec[0].z() - vec[1].z());
 			double d2 = (osg::Vec3d(vec[0].x(),vec[0].y(),0) - osg::Vec3d(vec[1].x(),vec[1].y(),0)).length();
-			setDis(d2,h,d1);
-		}
-		else if (vecCoord.size() == 2)
-		{
-			drawSniperLine(lineGroup,vecCoord);
-			double d1 = (vecCoord[0] - vecCoord[1]).length();
-			double h = abs(vecCoord[0].z() - vecCoord[1].z());
-			double d2 = (osg::Vec3d(vecCoord[0].x(),vecCoord[0].y(),0) - osg::Vec3d(vecCoord[1].x(),vecCoord[1].y(),0)).length();
-			setDis(d2,h,d1);
+			setDis(d1,d2,h);
 		}
 	}
 	return false;
 }
 
-void LineSurveyEventHandler::drawSniperLine(osg::Group* lineGroup,vector<osg::Vec3d>& vecInsect)
+void LineSurveyEventHandler::drawLine(osg::Group* lineGroup,vector<osg::Vec3d>& vecInsect)
 {
 	if (vecInsect.size()<2)
 	{
@@ -136,22 +106,10 @@ void LineSurveyEventHandler::drawSniperLine(osg::Group* lineGroup,vector<osg::Ve
 	_geometry1->setDataVariance(osg::Object::DYNAMIC);
 	osg::ref_ptr<osg::Vec4Array> shared_colors = new osg::Vec4Array;
 	shared_colors->push_back(osg::Vec4(1.0f, 1.0f, 0.0f, 1.0f));
-	shared_colors->push_back(osg::Vec4(1.0f, 0.0f, 0.0f, 1.0f));
 	_geometry1->setColorArray(shared_colors.get(), osg::Array::BIND_PER_PRIMITIVE_SET);
 
 	osg::ref_ptr<osg::Vec3Array> vert1 = new osg::Vec3Array();
 	
-	/*vert1->push_back(vecInsect[0]);
-	vert1->push_back(vecInsect[1]);
-	_geometry1->setVertexArray(vert1.get());
-	_geometry1->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINES, 0, 2));
-	_geode->addDrawable(_geometry1);
-	if (vecInsect.size() == 2)
-	{
-	lineGroup->addChild(_geode);
-	return ;
-	}*/
-
 	for (int i = 0;i<vecInsect.size() ;i++)
 	{
 		vert1->push_back(vecInsect[i]);
@@ -177,7 +135,7 @@ LineSurveyEventHandler::LineSurveyEventHandler(osg::Group* group,CvZLineSurveyIn
 void LineSurveyEventHandler::setDis(double d1,double d2,double h)
 {
 	char msg[999];
-	sprintf_s(msg,"水平距离：%f (米)\r\n高度：%f (米)\r\n直线距离：%f (米)",d1,h,d2);
+	sprintf_s(msg,"直线距离：%f (米)\r\n水平距离：%f (米)\r\n高差：%f (米)",d1,d2,h);
 	CEdit* pEdit = (CEdit*)m_pLineSurveyInfoWin->GetDlgItem(IDC_EDIT_LINESURVEY_DIST);
 	pEdit->SetWindowTextW(CString(msg));
 }

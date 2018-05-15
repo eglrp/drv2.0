@@ -18,7 +18,7 @@ public:
 	virtual bool handle(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa);
 	void getPos(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Vec3d& pos);
 
-	void drawSniperLine(osg::Group* lineGroup,vector<osg::Vec3d>& vecInsect);
+	void drawLine(osg::Group* lineGroup,vector<osg::Vec3d>& vecInsect);
 	void setDis(double , double , double);
 	LineSurveyEventHandler(osg::Group* group,CvZLineSurveyInfoWin* pWin);
 	~LineSurveyEventHandler(){};
@@ -26,14 +26,13 @@ public:
 public:
 	bool _mouseDown;
 	float _mouseDownX, _mouseDownY;
-	osg::Vec3d mlastPt;
 	osg::ref_ptr< osg::Group > _group;
 	osg::ref_ptr< osg::Group > lineGroup;
 	vector<osg::Vec3d> vecCoord;
 	CvZLineSurveyInfoWin* m_pLineSurveyInfoWin;
 };
 
-const char* const clsidvlLineSurvey = "00000000-4900-0000-1000-000000000001";
+const char* const clsidvlLineSurvey = "00000000-4900-1000-0000-000000000001";
 class CvlLineSurvey : public IUICommon, public IUICommand, public IUITool
 {
 	X3BEGIN_CLASS_DECLARE(CvlLineSurvey, clsidvlLineSurvey)		
