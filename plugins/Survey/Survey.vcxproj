@@ -398,8 +398,10 @@
     <ClInclude Include="CvvImage.h" />
     <ClInclude Include="DialogLoadShp.h" />
     <ClInclude Include="DlgAttInfoEx.h" />
+    <ClInclude Include="DLGHouseVisiableSurvey.h" />
     <ClInclude Include="DLGInternetInfo.h" />
     <ClInclude Include="exportVector.h" />
+    <ClInclude Include="HouseVisiableSurvey.h" />
     <ClInclude Include="HtmlDlg.h" />
     <ClInclude Include="MediaPlayerDlg.h" />
     <ClInclude Include="MyHtmlCtrl.h" />
@@ -434,8 +436,10 @@
     <ClCompile Include="CvvImage.cpp" />
     <ClCompile Include="DialogLoadShp.cpp" />
     <ClCompile Include="DlgAttInfoEx.cpp" />
+    <ClCompile Include="DLGHouseVisiableSurvey.cpp" />
     <ClCompile Include="DLGInternetInfo.cpp" />
     <ClCompile Include="exportVector.cpp" />
+    <ClCompile Include="HouseVisiableSurvey.cpp" />
     <ClCompile Include="HtmlDlg.cpp" />
     <ClCompile Include="LineSegmentIntersector.cpp" />
     <ClCompile Include="MediaPlayerDlg.cpp" />

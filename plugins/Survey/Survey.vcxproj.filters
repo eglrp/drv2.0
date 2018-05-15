@@ -141,6 +141,12 @@
     <ClInclude Include="..\..\include\EarthMatrix\CMyListCtr.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="HouseVisiableSurvey.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DLGHouseVisiableSurvey.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -237,6 +243,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="..\..\include\EarthMatrix\CMyListCtr.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="HouseVisiableSurvey.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DLGHouseVisiableSurvey.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
