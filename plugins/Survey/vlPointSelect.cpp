@@ -1001,7 +1001,7 @@ void PickModelHandler::getVisiableBuilding(osg::Vec3d vi)
 	}
 }
 
-void PickModelHandler::drawLine(osg::Group* lineGroup,std::vector<osg::Vec3d>& vecInsect)
+void PickModelHandler::drawLine(osg::Group* lineGroup,std::vector<osg::Vec3d>& vecInsect,bool bDepthTest)
 {
 	if (vecInsect.size()<2)
 	{
@@ -1015,8 +1015,13 @@ void PickModelHandler::drawLine(osg::Group* lineGroup,std::vector<osg::Vec3d>& v
 	osg::ref_ptr<osg::Geode> _geode = new osg::Geode();
 	_geode->setDataVariance(osg::Object::DYNAMIC);
 	_geode->getOrCreateStateSet()->setAttributeAndModes( new osg::LineWidth(2.0f) );
+	if (bDepthTest)
+	{
+		_geode->getOrCreateStateSet()->setMode( GL_DEPTH_TEST, osg::StateAttribute::ON );
+	}
+	else
+		_geode->getOrCreateStateSet()->setMode( GL_DEPTH_TEST, osg::StateAttribute::OFF );
 	_geode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
-	_geode->getOrCreateStateSet()->setMode( GL_DEPTH_TEST, osg::StateAttribute::ON );
 
 	osg::ref_ptr<osg::Geometry> _geometry1 = new osg::Geometry();
 	_geometry1->setDataVariance(osg::Object::DYNAMIC);

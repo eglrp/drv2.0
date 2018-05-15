@@ -37,7 +37,7 @@ public:
 	bool SetBuddy(x3::IObject* val);
 	void AddCylinderNode(double x, double y, double z, double r);
 	osg::ref_ptr<osg::Geode> AddPolygonNode(osg::Vec3Array* arr,osg::Vec4 color = osg::Vec4(1.0,1.0,0.0,0.8));
-	void drawLine(osg::Group* lineGroup,std::vector<osg::Vec3d>& vecInsect);
+	void drawLine(osg::Group* lineGroup,std::vector<osg::Vec3d>& vecInsect,bool bDepthTest = false);
 	osg::ref_ptr<osg::Group> gTemp;
 
 protected:
