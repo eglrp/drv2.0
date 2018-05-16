@@ -21,7 +21,7 @@
 #include <osgUtil/IntersectVisitor>
 #include <osg/LineSegment>
 #include <osgViewer/Renderer>
-#include <fstream>
+
 extern std::string s_manHole;
 extern std::string s_smokeSensor;
 extern std::string s_doorSensor;

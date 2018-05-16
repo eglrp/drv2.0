@@ -2,6 +2,7 @@
 #include "resource.h"
 #include "afxcmn.h"
 #include "DLGTab1.h"
+//#include "afxwin.h"
 // DLGHouseVisiableSurvey dialog
 
 class DLGHouseVisiableSurvey : public CDialogEx
@@ -22,7 +23,6 @@ protected:
 	DECLARE_MESSAGE_MAP()
 public:
 	CTabCtrl mTab;
-
 	int mCurSelTab;   
 	DLGTab1 mPage1;   
 	DLGTab1 mPage2;   
@@ -30,4 +30,7 @@ public:
 	virtual BOOL OnInitDialog();
 	afx_msg void OnTcnSelchangeTab1(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnClose();
+	afx_msg void OnBnClickedButtonSelall();
+	afx_msg void OnBnClickedButtonSelinv();
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };
