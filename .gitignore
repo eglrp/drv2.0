@@ -18,3 +18,4 @@ EarthMatrixRibbon/amd64/Release_2D/EarthMatrixRibbon.res
 plugins/Survey/x64/Release_2D/Survey.res
 EarthMatrixRibbon.suo
 EarthMatrixRibbon.suo
+*.res
