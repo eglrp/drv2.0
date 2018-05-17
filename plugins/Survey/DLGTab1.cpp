@@ -81,7 +81,13 @@ BOOL DLGTab1::PreTranslateMessage(MSG* pMsg)
 	// TODO: Add your specialized code here and/or call the base class
 	if (pMsg->message == WM_KEYDOWN)  
 	{
-		return true;  
+		switch(pMsg->wParam)  
+		{  
+		case VK_ESCAPE: //Esc按键事件 
+			return true;  
+		case VK_RETURN: //Enter按键事件 
+			return true;
+		}
 	}
 	return CDialogEx::PreTranslateMessage(pMsg);
 }

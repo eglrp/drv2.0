@@ -6,6 +6,7 @@
 #include "afxdialogex.h"
 #include "HouseVisiableSurvey.h"
 
+extern osg::ref_ptr<houseVisiableSurveyHandler> g_mHouseVisiableSurveyHandler;
 // DLGHouseVisiableSurvey dialog
 
 IMPLEMENT_DYNAMIC(DLGHouseVisiableSurvey, CDialogEx)
@@ -75,11 +76,28 @@ BOOL DLGHouseVisiableSurvey::OnInitDialog()
 void DLGHouseVisiableSurvey::OnTcnSelchangeTab1(NMHDR *pNMHDR, LRESULT *pResult)
 {
 	// TODO: 在此添加控件通知处理程序代码
-	mpDialog[mCurSelTab]->ShowWindow(SW_HIDE);  
-	//得到新的页面索引  
-	mCurSelTab = mTab.GetCurSel();  
+	int lastTab = mCurSelTab;
+	mCurSelTab = mTab.GetCurSel();
+	if (lastTab == mCurSelTab)
+	{
+		return;
+	}
+	mpDialog[lastTab]->ShowWindow(SW_HIDE);   
 	//把新的页面显示出来  
-	mpDialog[mCurSelTab]->ShowWindow(SW_SHOW);  
+	mpDialog[mCurSelTab]->ShowWindow(SW_SHOW);
+	DLGTab1* pDlg = (DLGTab1*)mpDialog[mCurSelTab];
+	int num = pDlg->mWndList.GetItemCount();
+	g_mHouseVisiableSurveyHandler->clearGeodeGroup(g_mHouseVisiableSurveyHandler->gTemp);
+	for (int i = 0;i<num;++i)
+	{
+		bool bmask = ListView_GetCheckState(pDlg->mWndList, i);
+		if (!bmask)
+		{	
+			continue;
+		}
+		CString s = pDlg->mWndList.GetItemText(i,0);
+		g_mHouseVisiableSurveyHandler->changeOneGeometry(s,true);
+	}
 	*pResult = 0;
 }
 
@@ -96,30 +114,51 @@ void DLGHouseVisiableSurvey::OnClose()
 void DLGHouseVisiableSurvey::OnBnClickedButtonSelall()
 {
 	// TODO: Add your control notification handler code here
-	DLGTab1* pDlg = (DLGTab1*)mpDialog[mCurSelTab];
-	pDlg->mRowMap.clear();
-	int num = pDlg->mWndList.GetItemCount();
-	for (int i = 0;i<num;++i)
+	if (!g_mHouseVisiableSurveyHandler)
 	{
-		pDlg->setLVCheck(i,true);
-		CString s = pDlg->mWndList.GetItemText(i,0);
-		pDlg->mRowMap[s] = true;
+		return;
 	}
-}
-
-
-void DLGHouseVisiableSurvey::OnBnClickedButtonSelinv()
-{
-	// TODO: Add your control notification handler code here
 	DLGTab1* pDlg = (DLGTab1*)mpDialog[mCurSelTab];
 	pDlg->mRowMap.clear();
 	int num = pDlg->mWndList.GetItemCount();
 	for (int i = 0;i<num;++i)
 	{
 		bool bmask = ListView_GetCheckState(pDlg->mWndList, i);
+		if(bmask)
+		{
+			continue;
+		}
+		pDlg->setLVCheck(i,true);
+		CString s = pDlg->mWndList.GetItemText(i,0);
+		pDlg->mRowMap[s] = true;
+		g_mHouseVisiableSurveyHandler->changeOneGeometry(s,true);
+	}
+
+}
+
+
+void DLGHouseVisiableSurvey::OnBnClickedButtonSelinv()
+{
+	// TODO: Add your control notification handler code here
+	if (!g_mHouseVisiableSurveyHandler)
+	{
+		return;
+	}
+	DLGTab1* pDlg = (DLGTab1*)mpDialog[mCurSelTab];
+	pDlg->mRowMap.clear();
+	int num = pDlg->mWndList.GetItemCount();
+	g_mHouseVisiableSurveyHandler->clearGeodeGroup(g_mHouseVisiableSurveyHandler->gTemp);
+	for (int i = 0;i<num;++i)
+	{
+		bool bmask = ListView_GetCheckState(pDlg->mWndList, i);
 		pDlg->setLVCheck(i,!bmask);
+		if (bmask)
+		{	
+			continue;
+		}
 		CString s = pDlg->mWndList.GetItemText(i,0);
 		pDlg->mRowMap[s] = !bmask;
+		g_mHouseVisiableSurveyHandler->changeOneGeometry(s,true);
 	}
 }
 

@@ -176,9 +176,8 @@ void houseVisiableSurveyHandler::getVisiableBuilding(osg::Vec3d vi)
 				}
 			}
 		}
-		
+		HOUSEDATA mHouseData;
 		mHouseData.bVisiable = bVisiable;
-		mHouseData.name = CString(sFloor.c_str());
 		if (bVisiable)
 		{		
 			mHouseData.vecCoord.assign(vecLineInsect.back().begin(),vecLineInsect.back().end());
@@ -191,7 +190,7 @@ void houseVisiableSurveyHandler::getVisiableBuilding(osg::Vec3d vi)
 			mHouseData.vecCoord.assign(vecIntersect.begin(),vecIntersect.end());;
 			
 		}
-		mVecData.push_back(mHouseData);
+		mVecData[CString(sFloor.c_str())] = mHouseData;
 	}
 	//std::sort(vecFloorIn.begin(),vecFloorIn.end());
 	//std::sort(vecFloorOut.begin(),vecFloorOut.end());
@@ -203,17 +202,17 @@ void houseVisiableSurveyHandler::getVisiableBuilding(osg::Vec3d vi)
 	gTemp = new osg::Group;
 	m_pDLGHouseVisiableSurveyWin->mPage1.mWndList.DeleteAllItems();
 	m_pDLGHouseVisiableSurveyWin->mPage2.mWndList.DeleteAllItems();
-	for (vector<HOUSEDATA >::iterator iter = mVecData.begin();iter != mVecData.end();++iter) 
+	for (map<CString,HOUSEDATA ,less<CString> >::iterator iter = mVecData.begin();iter != mVecData.end();++iter) 
 	{
-		if ((*iter).bVisiable)
+		if ((*iter).second.bVisiable)
 		{
-			drawLine(gTemp,(*iter).vecCoord,W2A((*iter).name));
-			m_pDLGHouseVisiableSurveyWin->mPage1.InsertRow((*iter).name,L"");
+			drawLine(gTemp,(*iter).second.vecCoord,W2A((*iter).first));
+			m_pDLGHouseVisiableSurveyWin->mPage1.InsertRow((*iter).first,L"");
 		}
 		else
 		{
 			//drawLine(gTemp,(*iter).second,W2A((*iter).first.name),true);
-			m_pDLGHouseVisiableSurveyWin->mPage2.InsertRow((*iter).name,L"");
+			m_pDLGHouseVisiableSurveyWin->mPage2.InsertRow((*iter).first,L"");
 		}
 	}
 	
@@ -257,6 +256,13 @@ void houseVisiableSurveyHandler::drawLine(osg::Group* lineGroup,std::vector<osg:
 	{
 		return;
 	}
+	osg::Vec4 color;
+	if (bDepthTest)
+	{
+		color = osg::Vec4(1.0f, 0.0f, 0.0f, 1.0f);
+	}
+	else
+		color = osg::Vec4(1.0f, 1.0f, 0.0f, 1.0f);
 	osg::ref_ptr<osg::Geode> _geode = new osg::Geode();
 	_geode->setDataVariance(osg::Object::DYNAMIC);
 	_geode->getOrCreateStateSet()->setAttributeAndModes( new osg::LineWidth(2.0f) );
@@ -271,7 +277,7 @@ void houseVisiableSurveyHandler::drawLine(osg::Group* lineGroup,std::vector<osg:
 	osg::ref_ptr<osg::Geometry> _geometry1 = new osg::Geometry();
 	_geometry1->setDataVariance(osg::Object::DYNAMIC);
 	osg::ref_ptr<osg::Vec4Array> shared_colors = new osg::Vec4Array;
-	shared_colors->push_back(osg::Vec4(1.0f, 1.0f, 0.0f, 1.0f));
+	shared_colors->push_back(color);
 	_geometry1->setColorArray(shared_colors.get(), osg::Array::BIND_PER_PRIMITIVE_SET);
 
 	osg::ref_ptr<osg::Vec3Array> vert1 = new osg::Vec3Array();
@@ -329,27 +335,35 @@ void houseVisiableSurveyHandler::changeOneGeometry(CString name,bool bAdd)
 	if (bAdd)//ÐÂÔö
 	{
 		int kk = mVecData.size();
-		for (vector<HOUSEDATA >::iterator iter = mVecData.begin();iter != mVecData.end();++iter) 
+		for (map<CString,HOUSEDATA,less<CString> >::iterator iter = mVecData.begin();iter != mVecData.end();++iter) 
 		{
-			if (0 == name.Compare((iter->name)))
+			if (0 == name.Compare((iter->first)))
 			{
-				std::vector<osg::Vec3d> vec = (*iter).vecCoord;
+				std::vector<osg::Vec3d> vec = (*iter).second.vecCoord;
 				std::string sname = W2A(name);
-				drawLine(gTemp,vec,sname,!((*iter).bVisiable));
+				drawLine(gTemp,vec,sname,!((*iter).second.bVisiable));
 				break;
 			}
 		}	
 	}
 	else//É¾³ý
 	{
-		/*for (int i = 0;i<gTemp->getNumChildren();++i)
+		for (int i = 0;i<gTemp->getNumChildren();++i)
 		{
 			if (gTemp->getChild(i)->getName() == W2A(name))
 			{
 				gTemp->removeChild(i);
 				break;
 			}
-		}*/
+		}
+	}
+}
+
+void houseVisiableSurveyHandler::clearGeodeGroup(osg::Group* group)
+{
+	while(group->getNumChildren()>0)
+	{
+		group->removeChildren(0,1);
 	}
 }
 

@@ -16,3 +16,5 @@ EarthMatrixRibbon/amd64/Release_2D/EarthMatrixRibbon.res
 
 plugins/Survey/x64/Release_2D/Survey.res
 *.suo
+plugins/OpenFile/x64/Release_2D/OpenFile.res
+plugins/Project/x64/Release_2D/Project.res

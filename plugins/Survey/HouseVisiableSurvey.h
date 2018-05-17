@@ -16,11 +16,9 @@ USING_NAMESPACE_EARTHMATRIX
 class HOUSEDATA
 {
 public:
-	CString name;
 	bool bVisiable;
 	std::vector<osg::Vec3d> vecCoord;
 	HOUSEDATA& operator=(HOUSEDATA other){
-		name = other.name;
 		bVisiable = other.bVisiable;
 		vecCoord = other.vecCoord;
 		return *this;
@@ -40,7 +38,7 @@ public:
 	bool testIntersect(osg::Group* group,osg::Vec3d p1,osg::Vec3d p2,std::vector<osg::Vec3d>& vecIntersect);
 	void drawLine(osg::Group* lineGroup,std::vector<osg::Vec3d>& vecInsect,string name,bool bDepthTest = false);
 	void changeOneGeometry(CString name,bool bAdd);
-
+	void clearGeodeGroup(osg::Group*);
 	DLGHouseVisiableSurvey* m_pDLGHouseVisiableSurveyWin;
 	osg::ref_ptr<osg::Group> gTemp;
 	x3::Object<IViewer3D> m_spViewer3D;
@@ -50,8 +48,8 @@ protected:
 	bool _mouseDown;
 	float _mouseDownX,_mouseDownY;//鼠标点击的屏幕坐标
 	osg::Vec3d firstPt;//鼠标点击的场景坐标
-	HOUSEDATA mHouseData;
-	std::vector<HOUSEDATA > mVecData;
+	
+	std::map<CString,HOUSEDATA,less<CString> > mVecData;
 };
 
 
