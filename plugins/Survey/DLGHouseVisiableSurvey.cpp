@@ -13,6 +13,9 @@ IMPLEMENT_DYNAMIC(DLGHouseVisiableSurvey, CDialogEx)
 
 DLGHouseVisiableSurvey::DLGHouseVisiableSurvey(CWnd* pParent /*=NULL*/)
 	: CDialogEx(DLGHouseVisiableSurvey::IDD, pParent)
+	, mStaticNum(_T(""))
+	, mStrIgnore(_T(""))
+	, mStrInsertVal(_T(""))
 {
 
 }
@@ -25,6 +28,13 @@ void DLGHouseVisiableSurvey::DoDataExchange(CDataExchange* pDX)
 {
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Control(pDX, IDC_TAB1, mTab);
+	DDX_Text(pDX, IDC_STATIC_NUM, mStaticNum);
+	DDX_Control(pDX, IDC_CHECK2, mCheckIgnore);
+	DDX_Control(pDX, IDC_CHECK3, mCheckInsrtVal);
+	DDX_Text(pDX, IDC_EDIT1, mStrIgnore);
+	DDX_Text(pDX, IDC_EDIT2, mStrInsertVal);
+	DDX_Control(pDX, IDC_EDIT1, mEditIgnore);
+	DDX_Control(pDX, IDC_EDIT2, mEditInsertVal);
 }
 
 
@@ -33,6 +43,8 @@ BEGIN_MESSAGE_MAP(DLGHouseVisiableSurvey, CDialogEx)
 	ON_WM_CLOSE()
 	ON_BN_CLICKED(IDC_BUTTON_SELALL, &DLGHouseVisiableSurvey::OnBnClickedButtonSelall)
 	ON_BN_CLICKED(IDC_BUTTON_SELINV, &DLGHouseVisiableSurvey::OnBnClickedButtonSelinv)
+	ON_BN_CLICKED(IDC_CHECK2, &DLGHouseVisiableSurvey::OnBnClickedCheck2)
+	ON_BN_CLICKED(IDC_CHECK3, &DLGHouseVisiableSurvey::OnBnClickedCheck3)
 END_MESSAGE_MAP()
 
 
@@ -59,7 +71,8 @@ BOOL DLGHouseVisiableSurvey::OnInitDialog()
 	rc.right -= 0;  
 	mPage1.MoveWindow(&rc);  
 	mPage2.MoveWindow(&rc);  
-
+	mPage1.changeListPos();
+	mPage2.changeListPos();
 	//把对话框对象指针保存起来  
 	mpDialog[0] = &mPage1;  
 	mpDialog[1] = &mPage2;  
@@ -67,7 +80,14 @@ BOOL DLGHouseVisiableSurvey::OnInitDialog()
 	mpDialog[0]->ShowWindow(SW_SHOW);  
 	mpDialog[1]->ShowWindow(SW_HIDE);  
 	//保存当前选择  
-	mCurSelTab = 0;  
+	mCurSelTab = 0;
+
+	mEditIgnore.EnableWindow(FALSE);
+	mEditInsertVal.EnableWindow(FALSE);
+	mCheckIgnore.SetCheck(FALSE);
+	mCheckInsrtVal.SetCheck(FALSE);
+	mStrIgnore = _T("3");
+	mStrInsertVal = _T("1");
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常: OCX 属性页应返回 FALSE
 }
@@ -98,9 +118,16 @@ void DLGHouseVisiableSurvey::OnTcnSelchangeTab1(NMHDR *pNMHDR, LRESULT *pResult)
 		CString s = pDlg->mWndList.GetItemText(i,0);
 		g_mHouseVisiableSurveyHandler->changeOneGeometry(s,true);
 	}
+	updateStaticControl(num,  mPage1.mWndList.GetItemCount() + mPage2.mWndList.GetItemCount());
+	
 	*pResult = 0;
 }
 
+void DLGHouseVisiableSurvey::updateStaticControl(int num1,int num2)
+{
+	mStaticNum.Format(_T("%d/%d"),num1,  num2);
+	UpdateData(FALSE);
+}
 
 void DLGHouseVisiableSurvey::OnClose()
 {
@@ -182,4 +209,28 @@ BOOL DLGHouseVisiableSurvey::PreTranslateMessage(MSG* pMsg)
 		}  
 	}  
 	return CDialogEx::PreTranslateMessage(pMsg);
+}
+
+
+void DLGHouseVisiableSurvey::OnBnClickedCheck2()
+{
+	// TODO: Add your control notification handler code here
+	if (mCheckIgnore.GetCheck())
+	{
+		mEditIgnore.EnableWindow(TRUE);
+	}
+	else
+		mEditIgnore.EnableWindow(FALSE);
+}
+
+
+void DLGHouseVisiableSurvey::OnBnClickedCheck3()
+{
+	// TODO: Add your control notification handler code here
+	if (mCheckInsrtVal.GetCheck())
+	{
+		mEditInsertVal.EnableWindow(TRUE);
+	}
+	else
+		mEditInsertVal.EnableWindow(FALSE);
 }

@@ -10,7 +10,7 @@
 #include <osgEarthDrivers/feature_ogr/OGRFeatureOptions>
 #include "osg/LineWidth"
 #include <osgEarthSymbology/Geometry>
-std::vector<HOUSEDATA > gVecData;
+#include "ThreadSafeUpdateCallback.h"
 
 osg::ref_ptr<houseVisiableSurveyHandler> g_mHouseVisiableSurveyHandler = nullptr;
 
@@ -18,7 +18,8 @@ houseVisiableSurveyHandler::houseVisiableSurveyHandler(DLGHouseVisiableSurvey* p
 {
 	gTemp = nullptr;
 	_mouseDown = false;
-	
+	_isBusy = false;
+	mValIgnore = 0.1;
 	m_pDLGHouseVisiableSurveyWin = pWin;
 }
 
@@ -120,9 +121,25 @@ void houseVisiableSurveyHandler::getVisiableBuilding(osg::Vec3d vi)
 	osgEarth::Features::Feature* mfeature;
 	osgEarth::Features::Feature* feature;
 	std::vector<std::vector<osg::Vec3d> > vecLineInsect;
-	std::vector<std::string> vecFloorIn;
-	std::vector<std::string> vecFloorOut;
-	gVecData.clear();
+	m_pDLGHouseVisiableSurveyWin->UpdateData(TRUE);
+	if (m_pDLGHouseVisiableSurveyWin->mCheckInsrtVal.GetCheck())//判断是否要插值
+	{
+		_insert = true;
+		std::string s = W2A(m_pDLGHouseVisiableSurveyWin->mStrInsertVal);
+		mValInsert = atof(s.c_str());
+	}
+	else
+		_insert = false;
+	if (m_pDLGHouseVisiableSurveyWin->mCheckIgnore.GetCheck())//判断是否起点忽略
+	{
+		std::string s = W2A(m_pDLGHouseVisiableSurveyWin->mStrIgnore);
+		if( !(m_pDLGHouseVisiableSurveyWin->mStrIgnore).IsEmpty())
+			mValIgnore = atof(s.c_str());
+		else
+			mValIgnore = 0.1;
+	}
+	else
+		mValIgnore = 0.1;
 	while(cursor->hasMore())
 	{
 		//输出feature中的信息
@@ -146,6 +163,7 @@ void houseVisiableSurveyHandler::getVisiableBuilding(osg::Vec3d vi)
 		bool bVisiable = false;
 
 		std::vector<osg::Vec3d> vecIntersect;
+		
 		while(parts.hasMore())
 		{
 			osgEarth::Symbology::Geometry* part = parts.next();
@@ -160,11 +178,16 @@ void houseVisiableSurveyHandler::getVisiableBuilding(osg::Vec3d vi)
 			if(allPoints->size()<2)
 				continue;
 
+			if (_insert)
+			{
+				InsertPoints(allPoints,mValInsert);
+			}
+			
 			for( osg::Vec3Array::iterator i = allPoints->begin(); i != allPoints->end(); ++i )
 			{
 				osg::Vec3d v(*i);
 				v.z() = (dg + dg2)/2+ gc;
-				bool b = testIntersect(m_spViewer3D->getRootNode()->asGroup(),v,vi,vecIntersect);
+				bool b = testIntersect(m_spViewer3D->getRootNode()->asGroup(),vi,v,vecIntersect);
 				if (vecIntersect.size()<1)
 				{
 					bVisiable = true;
@@ -181,46 +204,92 @@ void houseVisiableSurveyHandler::getVisiableBuilding(osg::Vec3d vi)
 		if (bVisiable)
 		{		
 			mHouseData.vecCoord.assign(vecLineInsect.back().begin(),vecLineInsect.back().end());
-			
-			//vecFloorIn.push_back(sFloor);
 			numVisiableBuilding++;
 		}
 		else
 		{
-			mHouseData.vecCoord.assign(vecIntersect.begin(),vecIntersect.end());;
-			
+			mHouseData.vecCoord.assign(vecIntersect.begin(),vecIntersect.end());;		
 		}
 		mVecData[CString(sFloor.c_str())] = mHouseData;
 	}
-	//std::sort(vecFloorIn.begin(),vecFloorIn.end());
-	//std::sort(vecFloorOut.begin(),vecFloorOut.end());
 	if (gTemp != nullptr)
 	{
 		m_spViewer3D->RemoveNode(gTemp);
 		gTemp = nullptr;
 	}
 	gTemp = new osg::Group;
+	gTemp->addUpdateCallback(new CThreadSafeUpdateCallback);
 	m_pDLGHouseVisiableSurveyWin->mPage1.mWndList.DeleteAllItems();
 	m_pDLGHouseVisiableSurveyWin->mPage2.mWndList.DeleteAllItems();
+	int num1 = 0,num2 = 0;
 	for (map<CString,HOUSEDATA ,less<CString> >::iterator iter = mVecData.begin();iter != mVecData.end();++iter) 
 	{
 		if ((*iter).second.bVisiable)
 		{
 			drawLine(gTemp,(*iter).second.vecCoord,W2A((*iter).first));
 			m_pDLGHouseVisiableSurveyWin->mPage1.InsertRow((*iter).first,L"");
+			num1++;
 		}
 		else
 		{
 			//drawLine(gTemp,(*iter).second,W2A((*iter).first.name),true);
 			m_pDLGHouseVisiableSurveyWin->mPage2.InsertRow((*iter).first,L"");
+			num2++;
 		}
-	}
-	
+	} 
+	m_pDLGHouseVisiableSurveyWin->updateStaticControl(num1,num1+num2);
 	if (numVisiableBuilding>0)
 	{
 		gTemp->setName("通视线");
 		m_spViewer3D->AddNode(gTemp);
 	}
+}
+
+void houseVisiableSurveyHandler::InsertPoints(osg::ref_ptr<osg::Vec3Array> allPoints,double rio)
+{
+	std::vector<osg::Vec3> vecPoints;
+	for (int i = 0;i<allPoints->size()-1;++i)
+	{
+		osg::Vec3 p_start = allPoints->at(i);
+		osg::Vec3 p_end = allPoints->at(i+1);
+		double len = (p_start-p_end).length();
+
+		double step = rio/len;
+		double dx = step * (p_end.x() - p_start.x());
+		double dy = step * (p_end.y() - p_start.y());
+		double dz = step * (p_end.z() - p_start.z());
+
+		osg::Vec3d pt = p_start;
+
+		while ((pt-p_end).length()>rio)
+		{
+			pt = p_start + osg::Vec3(dx,dy,dz);
+
+			vecPoints.push_back(pt);
+			p_start = pt;
+		}
+		vecPoints.push_back(p_end);
+	}
+	osg::Vec3 p_start = allPoints->back();
+	osg::Vec3 p_end = allPoints->at(0);
+	double len = (p_start-p_end).length();
+
+	double step = rio/len;
+	double dx = step * (p_end.x() - p_start.x());
+	double dy = step * (p_end.y() - p_start.y());
+	double dz = step * (p_end.z() - p_start.z());
+
+	osg::Vec3d pt = p_start;
+
+	while ((pt-p_end).length()>rio)
+	{
+		pt = p_start + osg::Vec3(dx,dy,dz);
+
+		vecPoints.push_back(pt);
+		p_start = pt;
+	}
+	vecPoints.push_back(p_end);
+	allPoints->assign(vecPoints.begin(), vecPoints.end());
 }
 
 bool houseVisiableSurveyHandler::testIntersect(osg::Group* group,osg::Vec3d p1,osg::Vec3d p2,std::vector<osg::Vec3d>& vecIntersect)
@@ -240,7 +309,7 @@ bool houseVisiableSurveyHandler::testIntersect(osg::Group* group,osg::Vec3d p1,o
 			hitr != ls->getIntersections().end();++hitr)
 		{
 			osg::Vec3d p = hitr->getWorldIntersectPoint();
-			if ((p-p1).length()>=0.5 && (p-p2).length()>=0.5)
+			if ((p-p1).length()>=mValIgnore && (p-p2).length()>=0.1)
 			{
 				vecIntersect.push_back(p);
 			}	
@@ -290,7 +359,10 @@ void houseVisiableSurveyHandler::drawLine(osg::Group* lineGroup,std::vector<osg:
 	_geometry1->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, vert1->size()));
 	_geode->addDrawable(_geometry1);
 	_geode->setName(name);
-	lineGroup->addChild(_geode);
+	osg::ref_ptr<CThreadSafeUpdateCallback> spCallback = dynamic_cast<CThreadSafeUpdateCallback*>(lineGroup->getUpdateCallback());
+	if( spCallback != NULL )
+		spCallback->AddChild(lineGroup, _geode);
+	//lineGroup->addChild(_geode);
 }
 
 bool houseVisiableSurveyHandler::handle( const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa )
@@ -318,9 +390,13 @@ bool houseVisiableSurveyHandler::handle( const osgGA::GUIEventAdapter &ea, osgGA
 		{
 			osg::Vec3d vecPos;
 			getPos(ea, aa, vecPos);
-			if (vecPos.length() >0.1)
-			{
+			if (vecPos.length() >0.1 && !_isBusy)
+			{	
+				_isBusy = true;
+				
 				getVisiableBuilding(vecPos);
+				
+				_isBusy = false;
 				return true;
 			}
 		}
@@ -361,6 +437,10 @@ void houseVisiableSurveyHandler::changeOneGeometry(CString name,bool bAdd)
 
 void houseVisiableSurveyHandler::clearGeodeGroup(osg::Group* group)
 {
+	if (!group)
+	{
+		return;
+	}
 	while(group->getNumChildren()>0)
 	{
 		group->removeChildren(0,1);
@@ -443,7 +523,10 @@ bool CHouseVisiableSurvey::Activate()
 	}
 	x3::Object<IViewer3D> spViewer3D(m_spBuddy);
 	
+	p_mDLGHouseVisiableSurveyWin->mStaticNum = _T("");
+	p_mDLGHouseVisiableSurveyWin->UpdateData(FALSE);
 	p_mDLGHouseVisiableSurveyWin->ShowWindow(SW_SHOW);
+	
 
 	if (g_mHouseVisiableSurveyHandler == nullptr)
 	{

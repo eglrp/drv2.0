@@ -39,6 +39,7 @@ public:
 	void drawLine(osg::Group* lineGroup,std::vector<osg::Vec3d>& vecInsect,string name,bool bDepthTest = false);
 	void changeOneGeometry(CString name,bool bAdd);
 	void clearGeodeGroup(osg::Group*);
+	void InsertPoints(osg::ref_ptr<osg::Vec3Array> allPoints,double rio);
 	DLGHouseVisiableSurvey* m_pDLGHouseVisiableSurveyWin;
 	osg::ref_ptr<osg::Group> gTemp;
 	x3::Object<IViewer3D> m_spViewer3D;
@@ -46,10 +47,14 @@ public:
 	CString m_sDefLayer;
 protected:
 	bool _mouseDown;
+	bool _isBusy;//标记是否正在执行搜索
 	float _mouseDownX,_mouseDownY;//鼠标点击的屏幕坐标
 	osg::Vec3d firstPt;//鼠标点击的场景坐标
-	
 	std::map<CString,HOUSEDATA,less<CString> > mVecData;
+
+	bool _insert;
+	double mValInsert;
+	double mValIgnore;
 };
 
 

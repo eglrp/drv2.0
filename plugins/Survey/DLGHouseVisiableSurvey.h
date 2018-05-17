@@ -2,6 +2,7 @@
 #include "resource.h"
 #include "afxcmn.h"
 #include "DLGTab1.h"
+#include "afxwin.h"
 //#include "afxwin.h"
 // DLGHouseVisiableSurvey dialog
 
@@ -33,4 +34,14 @@ public:
 	afx_msg void OnBnClickedButtonSelall();
 	afx_msg void OnBnClickedButtonSelinv();
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
+	CString mStaticNum;
+	CButton mCheckIgnore;
+	CButton mCheckInsrtVal;
+	CString mStrIgnore;
+	CString mStrInsertVal;
+	CEdit mEditIgnore;
+	CEdit mEditInsertVal;
+	afx_msg void OnBnClickedCheck2();
+	afx_msg void OnBnClickedCheck3();
+	void updateStaticControl(int,int);
 };

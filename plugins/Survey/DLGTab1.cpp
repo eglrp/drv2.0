@@ -45,24 +45,41 @@ BOOL DLGTab1::OnInitDialog()
 	// TODO:  在此添加额外的初始化
 	RECT rc;  
 	GetClientRect(&rc);  
-	//ScreenToClient(&rc);
+	//rc.right -= 20;
 	rc.bottom -= 45;
+	//ScreenToClient(&rc);
 	mWndList.MoveWindow(&rc);  
 	
 	mWndList.InsertColumn (0, _T("字段名"), LVCFMT_LEFT, 200);
 	mWndList.InsertColumn (1, _T("字段值"), LVCFMT_LEFT, 5);
 
 	mWndList.SendMessage (LVM_SETEXTENDEDLISTVIEWSTYLE, 0,
-		LVS_EX_FULLROWSELECT /*| LVS_EX_GRIDLINES*/|LVS_NOCOLUMNHEADER|LVS_EX_CHECKBOXES);
+		LVS_EX_FULLROWSELECT | /*LVS_EX_GRIDLINES|*/LVS_NOCOLUMNHEADER|LVS_EX_CHECKBOXES);
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// 异常: OCX 属性页应返回 FALSE
+}
+
+void DLGTab1::changeListPos()
+{
+	RECT rc;  
+	GetClientRect(&rc);  
+	//rc.right -= 20;
+	//rc.bottom -= 45;
+	//ScreenToClient(&rc);
+	mWndList.MoveWindow(&rc);  
 }
 
 void DLGTab1::InsertRow(CString sName, CString sValue)
 {
 	USES_CONVERSION;
+	if (sName.Compare(_T("1")) == 0)
+	{
+		return;
+	}
 	int n = mWndList.GetItemCount();
-	mWndList.InsertItem(n, _T("1"));
+	CString ttt;  
+	ttt.Format(_T("%d"),n);
+	mWndList.InsertItem(n, ttt);
 	mWndList.SetItemText (n, 0, sName);
 	mWndList.SetItemText (n, 1, sValue);
 	mRowMap[sName] = true;
