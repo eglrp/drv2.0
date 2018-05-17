@@ -11,6 +11,9 @@
 #include "osg/LineWidth"
 #include <osgEarthSymbology/Geometry>
 std::vector<HOUSEDATA > gVecData;
+
+osg::ref_ptr<houseVisiableSurveyHandler> g_mHouseVisiableSurveyHandler = nullptr;
+
 houseVisiableSurveyHandler::houseVisiableSurveyHandler(DLGHouseVisiableSurvey* pWin)
 {
 	gTemp = nullptr;
@@ -188,7 +191,7 @@ void houseVisiableSurveyHandler::getVisiableBuilding(osg::Vec3d vi)
 			mHouseData.vecCoord.assign(vecIntersect.begin(),vecIntersect.end());;
 			
 		}
-		gVecData.push_back(mHouseData);
+		mVecData.push_back(mHouseData);
 	}
 	//std::sort(vecFloorIn.begin(),vecFloorIn.end());
 	//std::sort(vecFloorOut.begin(),vecFloorOut.end());
@@ -200,7 +203,7 @@ void houseVisiableSurveyHandler::getVisiableBuilding(osg::Vec3d vi)
 	gTemp = new osg::Group;
 	m_pDLGHouseVisiableSurveyWin->mPage1.mWndList.DeleteAllItems();
 	m_pDLGHouseVisiableSurveyWin->mPage2.mWndList.DeleteAllItems();
-	for (vector<HOUSEDATA >::iterator iter = gVecData.begin();iter != gVecData.end();++iter) 
+	for (vector<HOUSEDATA >::iterator iter = mVecData.begin();iter != mVecData.end();++iter) 
 	{
 		if ((*iter).bVisiable)
 		{
@@ -325,8 +328,8 @@ void houseVisiableSurveyHandler::changeOneGeometry(CString name,bool bAdd)
 	USES_CONVERSION;
 	if (bAdd)//ÐÂÔö
 	{
-		int kk = gVecData.size();
-		for (vector<HOUSEDATA >::iterator iter = gVecData.begin();iter != gVecData.end();++iter) 
+		int kk = mVecData.size();
+		for (vector<HOUSEDATA >::iterator iter = mVecData.begin();iter != mVecData.end();++iter) 
 		{
 			if (0 == name.Compare((iter->name)))
 			{
@@ -361,7 +364,7 @@ CHouseVisiableSurvey::CHouseVisiableSurvey(void)
 	BitmapName(GETSTRINGW(app.c_str(), L"BitmapName", L"LineSurvey")); 
 	bInSurvey = false;
 	p_mDLGHouseVisiableSurveyWin = nullptr;
-	p_mHouseVisiableSurveyHandler = nullptr;
+	//p_mHouseVisiableSurveyHandler = nullptr;
 }
 
 CHouseVisiableSurvey::~CHouseVisiableSurvey(void)
@@ -428,11 +431,11 @@ bool CHouseVisiableSurvey::Activate()
 	
 	p_mDLGHouseVisiableSurveyWin->ShowWindow(SW_SHOW);
 
-	if (p_mHouseVisiableSurveyHandler == nullptr)
+	if (g_mHouseVisiableSurveyHandler == nullptr)
 	{
-		p_mHouseVisiableSurveyHandler = new houseVisiableSurveyHandler(p_mDLGHouseVisiableSurveyWin);
-		p_mHouseVisiableSurveyHandler->SetBuddy(m_val);
-		spViewer3D->getViewer()->addEventHandler( p_mHouseVisiableSurveyHandler.get() );
+		g_mHouseVisiableSurveyHandler = new houseVisiableSurveyHandler(p_mDLGHouseVisiableSurveyWin);
+		g_mHouseVisiableSurveyHandler->SetBuddy(m_val);
+		spViewer3D->getViewer()->addEventHandler( g_mHouseVisiableSurveyHandler );
 	}
 
 
@@ -462,9 +465,9 @@ bool CHouseVisiableSurvey::Deactivate()
 		p_mDLGHouseVisiableSurveyWin->ShowWindow(SW_HIDE);
 	}
 
-	spViewer3D->getViewer()->removeEventHandler( p_mHouseVisiableSurveyHandler.get() );
-	spViewer3D->RemoveNode(p_mHouseVisiableSurveyHandler->gTemp);
-	p_mHouseVisiableSurveyHandler = nullptr;
+	spViewer3D->getViewer()->removeEventHandler( g_mHouseVisiableSurveyHandler );
+	spViewer3D->RemoveNode(g_mHouseVisiableSurveyHandler->gTemp);
+	g_mHouseVisiableSurveyHandler = nullptr;
 	bInSurvey = false;
 	return true;
 }

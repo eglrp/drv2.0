@@ -83,5 +83,5 @@ public:
 	bool bInSurvey;
 	x3::IObject* m_val;
 	DLGHouseVisiableSurvey* p_mDLGHouseVisiableSurveyWin;
-	osg::ref_ptr<houseVisiableSurveyHandler> p_mHouseVisiableSurveyHandler;
+	//houseVisiableSurveyHandler* p_mHouseVisiableSurveyHandler;
 };

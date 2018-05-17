@@ -47,8 +47,8 @@ BOOL DLGHouseVisiableSurvey::OnInitDialog()
 	mTab.InsertItem(1, _T("≤ªø… ”"));
 	mPage1.Create(IDD_DIALOG_TAB1, &mTab);
 	mPage2.Create(IDD_DIALOG_TAB1, &mTab);
-	mPage1.parent = (CObject*)this;
-	mPage2.parent = (CObject*)this;
+	//mPage1.parent = (CObject*)this;
+	//mPage2.parent = (CObject*)this;
 
 	CRect rc;  
 	mTab.GetClientRect(rc);  

@@ -6,6 +6,8 @@
 #include "afxdialogex.h"
 #include "DLGHouseVisiableSurvey.h"
 #include "HouseVisiableSurvey.h"
+
+extern osg::ref_ptr<houseVisiableSurveyHandler> g_mHouseVisiableSurveyHandler;
 // DLGTab1 ¶Ô»°¿ò
 
 IMPLEMENT_DYNAMIC(DLGTab1, CDialogEx)
@@ -87,9 +89,10 @@ BOOL DLGTab1::PreTranslateMessage(MSG* pMsg)
 
 void DLGTab1::changeOneGeometry(CString name,bool bAdd)
 {
-	DLGHouseVisiableSurvey* pWin = (DLGHouseVisiableSurvey*)parent;
-	houseVisiableSurveyHandler* pHandler = (houseVisiableSurveyHandler*)(pWin->parent);
-	pHandler->changeOneGeometry(name,bAdd);
+	if (g_mHouseVisiableSurveyHandler)
+	{
+		g_mHouseVisiableSurveyHandler->changeOneGeometry(name,bAdd);
+	}
 }
 
 
