@@ -97,8 +97,6 @@ public:
 	std::string queryOSG(osg::Vec3d v,osg::BoundingBox& box);
 	bool queryDXF(osg::Vec3d v,_DXF::DL_DATA& dlData);
 	void MakeBuilding3DBorder(osg::Vec3d v);
-	bool testIntersect(osg::Group* group,osg::Vec3d p1,osg::Vec3d p2,std::vector<osg::Vec3d>& vecIntersect);
-	void getVisiableBuilding(osg::Vec3d v);
 
 	void MakeFloor3DBorder(osgEarth::Features::Feature*, double dFloor, double dCeil,osg::Vec4 color = osg::Vec4(1,1,0,1));
 	CString FindSHPFile();
