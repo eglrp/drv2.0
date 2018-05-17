@@ -72,10 +72,6 @@ void DLGTab1::changeListPos()
 void DLGTab1::InsertRow(CString sName, CString sValue)
 {
 	USES_CONVERSION;
-	if (sName.Compare(_T("1")) == 0)
-	{
-		return;
-	}
 	int n = mWndList.GetItemCount();
 	CString ttt;  
 	ttt.Format(_T("%d"),n);

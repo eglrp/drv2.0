@@ -236,8 +236,12 @@ void houseVisiableSurveyHandler::getVisiableBuilding(osg::Vec3d vi)
 			m_pDLGHouseVisiableSurveyWin->mPage2.InsertRow((*iter).first,L"");
 			num2++;
 		}
-	} 
+	}
 	m_pDLGHouseVisiableSurveyWin->updateStaticControl(num1,num1+num2);
+	m_pDLGHouseVisiableSurveyWin->mTab.SetCurSel(0);
+	m_pDLGHouseVisiableSurveyWin->mCurSelTab = 0;
+	m_pDLGHouseVisiableSurveyWin->mPage1.ShowWindow(SW_SHOW);
+	m_pDLGHouseVisiableSurveyWin->mPage2.ShowWindow(SW_HIDE);
 	if (numVisiableBuilding>0)
 	{
 		gTemp->setName("м╗йсоъ");

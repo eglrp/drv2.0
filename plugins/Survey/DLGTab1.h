@@ -20,7 +20,6 @@ protected:
 
 	DECLARE_MESSAGE_MAP()
 public:
-
 	CObject* parent;
 	CListCtrl mWndList;
 	virtual BOOL OnInitDialog();
@@ -30,7 +29,6 @@ public:
 	virtual BOOL PreTranslateMessage(MSG* pMsg);
 	void changeListPos();
 	void changeOneGeometry(CString name,bool bAdd);//更改一条记录图形
-	//void changeAllGeometry();//刷新所有记录图形
 	afx_msg void OnLvnItemchangedList1(NMHDR *pNMHDR, LRESULT *pResult);
 	afx_msg void OnNMClickList1(NMHDR *pNMHDR, LRESULT *pResult);
 };
