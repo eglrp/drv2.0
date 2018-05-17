@@ -12,6 +12,7 @@
 #include "vlRefetchBuildingH.h"
 #include "SniperLineAnalysis.h"
 #include "exportVector.h"
+#include "HouseVisiableSurvey.h"
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #endif
@@ -26,6 +27,7 @@ XBEGIN_DEFINE_MODULE()
 	//XDEFINE_CLASSMAP_ENTRY(CvlRefetchBuildingH)
 	XDEFINE_CLASSMAP_ENTRY(CvlPointSelect)
 	XDEFINE_CLASSMAP_ENTRY(CExportVector)
+	XDEFINE_CLASSMAP_ENTRY(CHouseVisiableSurvey)
 XEND_DEFINE_MODULE_DLL()
 
 OUTAPI bool x3InitializePlugin()
