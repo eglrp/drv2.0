@@ -398,11 +398,8 @@
     <ClInclude Include="CvvImage.h" />
     <ClInclude Include="DialogLoadShp.h" />
     <ClInclude Include="DlgAttInfoEx.h" />
-    <ClInclude Include="DLGHouseVisiableSurvey.h" />
     <ClInclude Include="DLGInternetInfo.h" />
-    <ClInclude Include="DLGTab1.h" />
     <ClInclude Include="exportVector.h" />
-    <ClInclude Include="HouseVisiableSurvey.h" />
     <ClInclude Include="HtmlDlg.h" />
     <ClInclude Include="MediaPlayerDlg.h" />
     <ClInclude Include="MyHtmlCtrl.h" />
@@ -414,7 +411,6 @@
     <ClInclude Include="SniperLineAnalysis.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="targetver.h" />
-    <ClInclude Include="ThreadSafeUpdateCallback.h" />
     <ClInclude Include="toShpAndDxf.h" />
     <ClInclude Include="VLCPlayerDlg.h" />
     <ClInclude Include="vlLineSurveyArea.h" />
@@ -438,11 +434,8 @@
     <ClCompile Include="CvvImage.cpp" />
     <ClCompile Include="DialogLoadShp.cpp" />
     <ClCompile Include="DlgAttInfoEx.cpp" />
-    <ClCompile Include="DLGHouseVisiableSurvey.cpp" />
     <ClCompile Include="DLGInternetInfo.cpp" />
-    <ClCompile Include="DLGTab1.cpp" />
     <ClCompile Include="exportVector.cpp" />
-    <ClCompile Include="HouseVisiableSurvey.cpp" />
     <ClCompile Include="HtmlDlg.cpp" />
     <ClCompile Include="LineSegmentIntersector.cpp" />
     <ClCompile Include="MediaPlayerDlg.cpp" />
@@ -464,7 +457,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_2D|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release_2D_Debug|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="ThreadSafeUpdateCallback.cpp" />
     <ClCompile Include="VLCPlayerDlg.cpp" />
     <ClCompile Include="vlLineSurveyArea.cpp" />
     <ClCompile Include="vlMeasureToolHandler.cpp" />
