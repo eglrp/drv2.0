@@ -329,7 +329,6 @@ bool CvlOpenFile::OnClick()
 						{
 							std::string sDH = feature->getString("栋号");
 							std::string sJZ = feature->getString("建筑名称");
-							std::string sSB = feature->getString("设备名称");
 							std::string sRS = feature->getString("进出人口数");
 
 							if (!sDH.empty())
@@ -339,10 +338,6 @@ bool CvlOpenFile::OnClick()
 							else if (!sJZ.empty())
 							{
 								vecLab.push_back(sJZ);
-							}
-							else if (!sSB.empty())
-							{
-								vecLab.push_back(sSB);
 							}
 							else
 								vecLab.push_back("null");
