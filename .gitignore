@@ -12,8 +12,6 @@ EarthMatrixRibbon/amd64/Release_2D/RCa09348
 *.pch
 *.cache
 *.unsuccessfulbuild
-EarthMatrixRibbon/amd64/Release_2D/EarthMatrixRibbon.res
-
 
 
 *.suo
@@ -21,6 +19,4 @@ plugins/OpenFile/x64/Release_2D/OpenFile.res
 plugins/Project/x64/Release_2D/Project.res
 
 
-EarthMatrixRibbon.suo
-EarthMatrixRibbon.suo
 
