@@ -35,6 +35,15 @@
     <None Include="..\..\EarthMatrixRibbon\res\background_com.bmp">
       <Filter>Resource Files</Filter>
     </None>
+    <None Include="..\..\..\dependency\res\playwndbackground.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\dependency\res\background_dlg.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
+    <None Include="..\..\..\dependency\res\background_com.bmp">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stdafx.h">
