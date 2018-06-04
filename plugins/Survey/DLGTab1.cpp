@@ -51,7 +51,7 @@ BOOL DLGTab1::OnInitDialog()
 	mWndList.MoveWindow(&rc);  
 	
 	mWndList.InsertColumn (0, _T("×Ö¶ÎÃû"), LVCFMT_LEFT, 200);
-	mWndList.InsertColumn (1, _T("×Ö¶ÎÖµ"), LVCFMT_LEFT, 5);
+	//mWndList.InsertColumn (1, _T("×Ö¶ÎÖµ"), LVCFMT_LEFT, 5);
 
 	mWndList.SendMessage (LVM_SETEXTENDEDLISTVIEWSTYLE, 0,
 		LVS_EX_FULLROWSELECT | /*LVS_EX_GRIDLINES|*/LVS_NOCOLUMNHEADER|LVS_EX_CHECKBOXES);
@@ -73,11 +73,7 @@ void DLGTab1::InsertRow(CString sName, CString sValue)
 {
 	USES_CONVERSION;
 	int n = mWndList.GetItemCount();
-	CString ttt;  
-	ttt.Format(_T("%d"),n);
-	mWndList.InsertItem(n, ttt);
-	mWndList.SetItemText (n, 0, sName);
-	mWndList.SetItemText (n, 1, sValue);
+	mWndList.InsertItem(0, sName);
 	mRowMap[sName] = true;
 	setLVCheck(n,TRUE);
 }

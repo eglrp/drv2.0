@@ -221,6 +221,8 @@ void houseVisiableSurveyHandler::getVisiableBuilding(osg::Vec3d vi)
 	gTemp->addUpdateCallback(new CThreadSafeUpdateCallback);
 	m_pDLGHouseVisiableSurveyWin->mPage1.mWndList.DeleteAllItems();
 	m_pDLGHouseVisiableSurveyWin->mPage2.mWndList.DeleteAllItems();
+	m_pDLGHouseVisiableSurveyWin->mPage1.mRowMap.clear();
+	m_pDLGHouseVisiableSurveyWin->mPage2.mRowMap.clear();
 	int num1 = 0,num2 = 0;
 	for (map<CString,HOUSEDATA ,less<CString> >::iterator iter = mVecData.begin();iter != mVecData.end();++iter) 
 	{
