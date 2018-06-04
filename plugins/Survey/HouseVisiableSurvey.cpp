@@ -152,7 +152,7 @@ void houseVisiableSurveyHandler::getVisiableBuilding(osg::Vec3d vi)
 		std::string sGC = feature->getString("高程");
 		std::string sDG = feature->getString("底高");
 		std::string sDG2 = feature->getString("顶高");
-		std::string sFloor = feature->getString("Layer");
+		std::string sFloor = feature->getString("完整房间号");
 		if (sDG2.empty()||sDG.empty()||sGC.empty())
 		{
 			continue;
