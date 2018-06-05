@@ -388,6 +388,9 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="..\..\..\dependency\res\background_com.bmp" />
+    <None Include="..\..\..\dependency\res\background_dlg.bmp" />
+    <None Include="..\..\..\dependency\res\playwndbackground.bmp" />
     <None Include="..\..\EarthMatrixRibbon\res\background.bmp" />
     <None Include="..\..\EarthMatrixRibbon\res\background_com.bmp" />
     <None Include="..\..\EarthMatrixRibbon\res\background_dlg.bmp" />
