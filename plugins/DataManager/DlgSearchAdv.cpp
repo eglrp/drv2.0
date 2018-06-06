@@ -51,6 +51,8 @@ void CDlgSearchAdv::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_STATIC_RESULTS, m_numResults);
 	DDX_Control(pDX, IDC_STATIC_SEARCHADV_TITLE, m_dlgTitle);
 	DDX_Control(pDX, IDC_BUTTON_SEARCHADVEXIT, m_EXIT);
+	DDX_Control(pDX, IDC_COMBO_FIELDS2, m_cFields2);
+	DDX_Control(pDX, IDC_EDIT_KEY_STR2, m_cKey2);
 }
 
 
@@ -71,7 +73,10 @@ END_MESSAGE_MAP()
 
 void CDlgSearchAdv::OnBnClickedButtonDosearch()
 {
+	//获取两个搜索关键字
 	m_cKey.GetWindowText(m_sKey);
+	m_cKey2.GetWindowText(m_sKey2);
+	//判断shp文件是否有效
 	if (m_sShp == _T(""))
 	{
 		return;
@@ -116,12 +121,15 @@ void CDlgSearchAdv::DoSearch()
 		path = T2A(sProjDir + _T("\\") + CString(FileNameEx.c_str()));
 	}
 
-	if (m_sKey == _T(""))
+	if (m_sKey == _T(""))//如果第一个搜索关键字为空 返回
 	{
 		return;
 	}
-
+	//获取两个搜索字段
 	m_cFields.GetWindowText(m_sField);
+	m_cFields2.GetWindowText(m_sField2);
+
+	
 
 	ogrOpt.url() = path;
 
@@ -144,15 +152,68 @@ void CDlgSearchAdv::DoSearch()
 			bool bFinded = false;
 
 			const osgEarth::Features::AttributeTable& attrs = feature->getAttrs();
-			for( osgEarth::Features::AttributeTable::const_iterator i = attrs.begin(); i != attrs.end(); ++i)
+
+			if (!m_sField2.IsEmpty() && !m_sKey2.IsEmpty())//如果第二个条件有效
 			{
-				CString sName = CString(i->first.c_str());
-				CString sValue = CString(i->second.getString().c_str());
-				if (sValue.Find(m_sKey) >= 0 && sValue != _T(""))
+				int n = 0;
+				for( osgEarth::Features::AttributeTable::const_iterator i = attrs.begin(); i != attrs.end(); ++i)
 				{
-					if (m_sField != _T(""))
+					CString sName = CString(i->first.c_str());
+					CString sValue = CString(i->second.getString().c_str());
+					if (sValue.Find(m_sKey) >= 0 && !sValue.IsEmpty())
 					{
-						if (m_sField == sName)
+						if (!m_sField.IsEmpty())
+						{
+							if (m_sField == sName)
+							{
+								n++;
+								if (n == 2)
+								{
+									bFinded = true;
+									m_cList.InsertItem(0, _T("1"));
+									vFeature.insert(vFeature.begin(), feature);
+									v.insert(v.begin(), part);
+									break;
+								}
+							}
+						}
+					}
+					else if (sValue.Find(m_sKey2) >= 0 && !sValue.IsEmpty())
+					{
+						if (m_sField2 == sName)
+						{
+							n++;
+							if (n == 2)
+							{
+								bFinded = true;
+								m_cList.InsertItem(0, _T("1"));
+								vFeature.insert(vFeature.begin(), feature);
+								v.insert(v.begin(), part);
+								break;
+							}
+						}
+					}
+				}
+			}
+			else //否则只按第一个条件搜索
+				for( osgEarth::Features::AttributeTable::const_iterator i = attrs.begin(); i != attrs.end(); ++i)
+				{
+					CString sName = CString(i->first.c_str());
+					CString sValue = CString(i->second.getString().c_str());
+					if (sValue.Find(m_sKey) >= 0 && sValue != _T(""))
+					{
+						if (!m_sField.IsEmpty())
+						{
+							if (m_sField == sName)
+							{
+								bFinded = true;
+								m_cList.InsertItem(0, _T("1"));
+								vFeature.insert(vFeature.begin(), feature);
+								v.insert(v.begin(), part);
+								break;
+							}
+						}
+						else
 						{
 							bFinded = true;
 							m_cList.InsertItem(0, _T("1"));
@@ -160,18 +221,9 @@ void CDlgSearchAdv::DoSearch()
 							v.insert(v.begin(), part);
 							break;
 						}
-					}
-					else
-					{
-						bFinded = true;
-						m_cList.InsertItem(0, _T("1"));
-						vFeature.insert(vFeature.begin(), feature);
-						v.insert(v.begin(), part);
-						break;
-					}
 
+					}
 				}
-			}
 
 			if (bFinded)
 			{
@@ -1121,6 +1173,7 @@ HBRUSH CDlgSearchAdv::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 		return (HBRUSH)::GetStockObject(NULL_BRUSH);
 	}
 	if(pWnd->GetDlgCtrlID() == IDC_STATIC_ZD || pWnd->GetDlgCtrlID() == IDC_STATIC_NR ||
+		pWnd->GetDlgCtrlID() == IDC_STATIC_ZD2 || pWnd->GetDlgCtrlID() == IDC_STATIC_NR2 ||
 		pWnd->GetDlgCtrlID() == IDC_STATIC__ || pWnd->GetDlgCtrlID() == IDC_STATIC_RESULTS ||
 		pWnd->GetDlgCtrlID() == IDC_STATIC_SEARCHADV_TITLE || pWnd->GetDlgCtrlID() == IDC_STATIC_QJ)
 	{

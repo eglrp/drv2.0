@@ -31,7 +31,8 @@ public:
 
 	CString m_sKey;
 	CString m_sField;
-
+	CString m_sKey2;
+	CString m_sField2;
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV Ö§³Ö
 
@@ -92,6 +93,8 @@ public:
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
 	afx_msg void OnBnClickedButtonSearchadvexit();
 	afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct);
+	CComboBox m_cFields2;
+	CEdit m_cKey2;
 };
 
 

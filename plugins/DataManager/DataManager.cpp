@@ -2549,6 +2549,7 @@ void CDataManager::FillFieldsToDlg(CString sShpFile)
     ogrOpt.url() = path;
 
     m_pSearchAdv->m_cFields.ResetContent();
+	m_pSearchAdv->m_cFields2.ResetContent();
 
     features = osgEarth::Features::FeatureSourceFactory::create(ogrOpt);
     features->initialize();
@@ -2566,7 +2567,7 @@ void CDataManager::FillFieldsToDlg(CString sShpFile)
         {
             CString sName = CString(i->first.c_str());
             m_pSearchAdv->m_cFields.AddString(sName);
-
+			m_pSearchAdv->m_cFields2.AddString(sName);
             m_pSearchAdv->m_cList.InsertColumn (nIndex++, sName, LVCFMT_LEFT, 80);
         }
 
