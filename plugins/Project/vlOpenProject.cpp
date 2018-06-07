@@ -580,7 +580,16 @@ void CvlOpenProject::OpenProject()
             }
         }
     }
-
+	node = root->first_node("Projection");
+	if (node)
+	{
+		nodeLayer = node->first_node("PROJECTION");
+		if (nodeLayer != NULL)
+		{
+			std::string s(nodeLayer->value());
+			spViewer3D->SetPrj(s);	
+		}
+	}
 	spViewer3D->Unlock();
 }
 

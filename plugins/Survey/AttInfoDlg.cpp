@@ -19,7 +19,7 @@ IMPLEMENT_DYNAMIC(CAttInfoDlg, CDialogEx)
 CAttInfoDlg::CAttInfoDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CAttInfoDlg::IDD, pParent)
 {
-	readPrjInfo();
+	//readPrjInfo();
 }
 
 CAttInfoDlg::~CAttInfoDlg()
@@ -697,7 +697,7 @@ std::string CAttInfoDlg::getLocationStr(double x,double y,std::string str1 ,std:
 
 void CAttInfoDlg::readPrjInfo()
 {
-	TCHAR szFilePath[1024 + 1];
+	/*TCHAR szFilePath[1024 + 1];
 	GetModuleFileName(NULL, szFilePath, 1024);
 
 	CString str_url = szFilePath;
@@ -711,7 +711,9 @@ void CAttInfoDlg::readPrjInfo()
 	fgets(str, 1024, fpPrj);
 	fclose(fpPrj);
 
-	prjInfo = str;
+	prjInfo = str;*/
+	CvlPointSelect* p = (CvlPointSelect*)parent;
+	prjInfo = p->getPrj();
 }
 
 void CAttInfoDlg::PointToWGS84(double x, double y, double& lon, double& lat)

@@ -1866,6 +1866,7 @@ bool CvlPointSelect::Activate()
 		AFX_MANAGE_STATE_EX;
 		m_pAttInfoWin = new CAttInfoDlg();
 		m_pAttInfoWin->parent = (CObject*) this; 
+		m_pAttInfoWin->prjInfo = spViewer3D->GetPrj();
 		m_pAttInfoWin->Create(IDD_DIALOG_POINTSELECT);
 		CBackgroundDlg* dlg = new CBackgroundDlg();
 		dlg->Create(IDD_DIALOG_BACKGROUND1);
