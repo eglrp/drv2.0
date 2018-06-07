@@ -484,9 +484,9 @@ void CAttInfoDlg::OnLButtonDown(UINT nFlags, CPoint point)
 
 	CDialogEx::OnLButtonDown(nFlags, point);
 
-	PostMessage(WM_NCLBUTTONDOWN,
-		HTCAPTION,
-		MAKELPARAM(point.x, point.y));  //或SendMessage(WM_SYSCOMMAND,0xF012,0);   //0xF012 = SC_MOVE | HTCAPTION
+	//PostMessage(WM_NCLBUTTONDOWN,
+	//	HTCAPTION,
+	//	MAKELPARAM(point.x, point.y));  //或SendMessage(WM_SYSCOMMAND,0xF012,0);   //0xF012 = SC_MOVE | HTCAPTION
 }
 
 //自适应调整行距和列宽
