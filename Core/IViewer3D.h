@@ -61,7 +61,8 @@ public:
 	virtual CStringArray* GetLayerCheck() = 0;
 	virtual CString GetViewportPos() = 0;
 	virtual void SetViewport(CString s) = 0;
-
+	virtual void SetPrj(std::string) = 0;
+	virtual std::string GetPrj() = 0;
 	/*virtual void SetHouseDefLayer(CString s) = 0;
 	virtual void SetBuildDefLayer(CString s) = 0;
 	virtual CString GetHouseDefLayer() = 0;
