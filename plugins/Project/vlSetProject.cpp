@@ -97,6 +97,8 @@ bool CvlSetProject::Activate()
 		m_pWin->m_nOSG_MAX_PAGEDLOD = spViewer3D->GetOSG_MAX_PAGEDLOD();
 		m_pWin->m_nOSG_NUM_DATABASE_THREADS = spViewer3D->GetOSG_NUM_DATABASE_THREADS();
 		m_pWin->m_nScreenNum = spViewer3D->GetScreenNum();
+		m_pWin->mPrj = spViewer3D->GetPrj();
+		m_pWin->mPrjStr = CString(m_pWin->mPrj.c_str());
 		m_pWin->parent = (CObject*) this; 
 		m_pWin->Create(CProjectSetDlg::IDD);
 	}
@@ -192,4 +194,10 @@ void CvlSetProject::SetBuildLayer(CString s)
 {
 	x3::Object<IViewer3D> spViewer3D(m_spBuddy);
 	//spViewer3D->SetBuildDefLayer(s);
+}
+
+void CvlSetProject::setPrj(std::string s)
+{
+	x3::Object<IViewer3D> spViewer3D(m_spBuddy);
+	spViewer3D->SetPrj(s);
 }

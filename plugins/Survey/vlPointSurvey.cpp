@@ -119,7 +119,7 @@ osg::Vec3d PointSuerveyToolEventHandler::getPos(const osgGA::GUIEventAdapter& ea
 
 void PointSuerveyToolEventHandler::readPrjInfo()
 {
-	TCHAR szFilePath[1024 + 1];
+	/*TCHAR szFilePath[1024 + 1];
 	GetModuleFileName(NULL, szFilePath, 1024);
 
 	CString str_url = szFilePath;
@@ -133,7 +133,9 @@ void PointSuerveyToolEventHandler::readPrjInfo()
 	fgets(str, 1024, fpPrj);
 	fclose(fpPrj);
 
-	prjInfo = str;
+	prjInfo = str;*/
+	CvlPointSurvey* p = (CvlPointSurvey*)(m_pWin->parent);
+	prjInfo = p->getPrj();
 }
 
 std::string PointSuerveyToolEventHandler::replaceFileName(std::string srcStr, std::string replaceStr)

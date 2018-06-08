@@ -145,6 +145,10 @@ void CvlSaveProject::SaveProject()
 	std::string sNum3 = int2str(spViewer3D->GetScreenNum());
 	settings->append_node(doc.allocate_node(rapidxml::node_element, "SCREEN_NUM", sNum3.c_str()));
     //////////////////////////////////////////////////////////////////////////
+	rapidxml::xml_node<>* prj = doc.allocate_node(rapidxml::node_element, "Projection", NULL);
+	node->append_node(prj);
+	std::string s = spViewer3D->GetPrj();
+	prj->append_node(doc.allocate_node(rapidxml::node_element, "PROJECTION", s.c_str()));
     /*rapidxml::xml_node<>* mode = doc.allocate_node(rapidxml::node_element,"mode","screen mode");
     mode->append_attribute(doc.allocate_attribute("fullscreen","false"));
     node->append_node(mode);*/

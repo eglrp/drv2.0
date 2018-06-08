@@ -66,6 +66,11 @@ public:
 	virtual bool Activate();
 	virtual bool Deactivate();
 
+	std::string getPrj()
+	{
+		x3::Object<IViewer3D> spViewer3D(m_spBuddy);
+		return spViewer3D->GetPrj();
+	}
 public:
 	bool bActive;
 

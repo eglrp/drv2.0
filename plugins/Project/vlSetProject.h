@@ -44,5 +44,6 @@ public:
 
 	void SetHouseLayer(CString s);
 	void SetBuildLayer(CString s);
+	void setPrj(std::string s);
 };
 

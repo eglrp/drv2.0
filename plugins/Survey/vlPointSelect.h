@@ -153,7 +153,11 @@ public:
 
 	//Tool
 	bool allAlpha(std::string str);
-
+	std::string getPrj()
+	{
+		x3::Object<IViewer3D> spViewer3D(m_spBuddy);
+		return spViewer3D->GetPrj();
+	}
     osg::ref_ptr<PickModelHandler> pickhandler;
     osg::Group* m_pLayerGroup;
 	x3::IObject* m_val;

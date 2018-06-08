@@ -6,7 +6,7 @@
 #include "vlMeasureToolHandler.h"
 #include<osgEarthAnnotation/CircleNode>
 #include "vPointSurveyInfoWin.h"
-
+#include "IViewer3D.h"
 
 using namespace osgEarth::Util;
 USING_NAMESPACE_EARTHMATRIX
@@ -62,7 +62,11 @@ public:
 
 	void readPrjInfo();
 	void PointToWGS84(double x, double y, double& lon, double& lat);
-
+	std::string getPrj()
+	{
+		x3::Object<IViewer3D> spViewer3D(m_spBuddy);
+		return spViewer3D->GetPrj();
+	}
     bool bInSurvey;
 
     osg::ref_ptr<PointSuerveyToolEventHandler> m_spPointEventHandler;

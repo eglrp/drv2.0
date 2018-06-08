@@ -583,7 +583,7 @@ void CFireControlDlg::PointToWGS84(double x, double y, double& lon, double& lat)
 
 void CFireControlDlg::readPrjInfo()
 {
-	TCHAR szFilePath[1024 + 1];
+	/*TCHAR szFilePath[1024 + 1];
 	GetModuleFileName(NULL, szFilePath, 1024);
 
 	CString str_url = szFilePath;
@@ -595,9 +595,9 @@ void CFireControlDlg::readPrjInfo()
 	FILE* fpPrj = fopen(curFilePath.c_str(), "r");
 	char str[1024];
 	fgets(str, 1024, fpPrj);
-	fclose(fpPrj);
-
-	prjInfo = str;
+	fclose(fpPrj);*/
+	CfireControl* p = (CfireControl*)(parent);
+	prjInfo = p->getPrj();
 }
 
 std::string CFireControlDlg::replaceFileName(std::string srcStr, std::string replaceStr)

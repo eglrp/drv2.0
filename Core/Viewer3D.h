@@ -82,6 +82,8 @@ public:
 	virtual CStringArray* GetLayerCheck(){ return m_aLayerCheck;};
 	virtual CString GetViewportPos();
 	virtual void SetViewport(CString s);
+	virtual void SetPrj(std::string) ;
+	virtual std::string GetPrj() ;
 	virtual osgGA::StateSetManipulator* getStateSetManipulator() { return m_spStatesetManipulator.get(); }
 
 public:	
@@ -123,6 +125,8 @@ protected:
 	int m_nOSG_MAX_PAGEDLOD;
 	int m_nOSG_NUM_DATABASE_THREADS;
 	int m_nScreenNum;
+
+	std::string m_prjInfo;
 
 	CString m_sHouseDefLayer;
 	CString m_sBuildDefLayer;

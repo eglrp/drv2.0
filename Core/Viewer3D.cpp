@@ -1150,4 +1150,13 @@ void CViewer3D::SetViewport(CString s)
 	Unlock();
 }
 
+void CViewer3D::SetPrj(std::string s) 
+{
+	m_prjInfo = s;
+}
+std::string CViewer3D::GetPrj() 
+{
+	return m_prjInfo;
+}
+
 END_NAMESPACE_EARTHMATRIX

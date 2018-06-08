@@ -7,7 +7,9 @@
 #include "ProjectSetDlg.h"
 #include "afxdialogex.h"
 #include "vlSetProject.h"
-
+#include <iostream>  
+#include <sstream> 
+#include <fstream>  
 
 // CProjectSetDlg 对话框
 
@@ -17,6 +19,7 @@ CProjectSetDlg::CProjectSetDlg(CWnd* pParent /*=NULL*/)
 	: CDialogEx(CProjectSetDlg::IDD, pParent)
 	, m_houseLayer(_T(""))
 	, m_buildLayer(_T(""))
+	, mPrjStr(_T(""))
 {
 	m_nScreenNum = 1;
 }
@@ -30,6 +33,7 @@ void CProjectSetDlg::DoDataExchange(CDataExchange* pDX)
 	CDialogEx::DoDataExchange(pDX);
 	DDX_Text(pDX, IDC_EDIT2_HOUSELAYER, m_houseLayer);
 	DDX_Text(pDX, IDC_EDIT3_BUILDLAYER, m_buildLayer);
+	DDX_Text(pDX, IDC_EDIT_PRJINFO, mPrjStr);
 }
 
 
@@ -39,6 +43,7 @@ BEGIN_MESSAGE_MAP(CProjectSetDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_CLOSE, &CProjectSetDlg::OnBnClickedButtonClose)
 	ON_BN_CLICKED(IDC_BUTTON2_GETHOUSELAYER, &CProjectSetDlg::OnBnClickedButton2Gethouselayer)
 	ON_BN_CLICKED(IDC_BUTTON3_GETBUILDLAYER, &CProjectSetDlg::OnBnClickedButton3Getbuildlayer)
+	ON_BN_CLICKED(IDC_BUTTON_SELPRJ, &CProjectSetDlg::OnBnClickedButtonSelprj)
 END_MESSAGE_MAP()
 
 
@@ -99,6 +104,7 @@ void CProjectSetDlg::InitSysInfo()
 void CProjectSetDlg::OnBnClickedButtonSaveset()
 {
 	// TODO: 在此添加控件通知处理程序代码
+	USES_CONVERSION;
 	CString s;
 	CEdit* pEdit = (CEdit*)GetDlgItem(IDC_EDIT_OSG_MAX_PAGEDLOD);
 	pEdit->GetWindowTextW(s);
@@ -123,8 +129,10 @@ void CProjectSetDlg::OnBnClickedButtonSaveset()
 	p->SetCameraLimitHeight(m_nCamera_Height_Limit);
 
 	UpdateData(TRUE);
-	p->SetBuildLayer(m_buildLayer);
-	p->SetHouseLayer(m_houseLayer);
+	/*p->SetBuildLayer(m_buildLayer);
+	p->SetHouseLayer(m_houseLayer);*/
+	mPrj = W2A(mPrjStr);
+	p->setPrj(mPrj);
 	AfxMessageBox(L"已保存！");
 }
 
@@ -153,4 +161,35 @@ void CProjectSetDlg::OnBnClickedButton3Getbuildlayer()
 	m_buildLayer = ps->GetBuildLayer();
 
 	UpdateData(FALSE);
+}
+
+
+void CProjectSetDlg::OnBnClickedButtonSelprj()
+{
+	// TODO: 在此添加控件通知处理程序代码
+	USES_CONVERSION;
+	CFileDialog dlg(TRUE, NULL, NULL, OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT, L"Projection File(*.prj)|*.prj||", NULL);
+	if (dlg.DoModal() == IDOK)
+	{
+		std::string sProjPath = W2A(dlg.GetPathName());
+
+		std::ifstream in(sProjPath.c_str());
+		std::ostringstream tmp;
+		tmp << in.rdbuf();
+		std::string str = tmp.str();
+		mPrjStr = CString(str.c_str());
+		UpdateData(FALSE);
+		/*std::ifstream infile;
+		infile.open(sProjPath.c_str(),std::ios::in);
+		char str[9999];
+		if (infile)
+		{
+		while(!infile.eof())
+		{
+		infile>>str;
+		}
+		mPrjStr = CString(str);
+		UpdateData(FALSE);
+		}*/
+	}
 }

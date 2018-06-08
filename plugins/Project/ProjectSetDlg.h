@@ -36,4 +36,8 @@ public:
 	CString m_houseLayer;
 	CString m_buildLayer;
 	afx_msg void OnBnClickedButton3Getbuildlayer();
+	afx_msg void OnBnClickedButtonSelprj();
+	CString mPrjStr;
+
+	std::string mPrj;//保存投影信息
 };
