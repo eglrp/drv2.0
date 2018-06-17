@@ -1126,7 +1126,7 @@ BOOL CDlgSearchAdv::PreTranslateMessage(MSG* pMsg)
 			OnClose();
 			return true;  
 		case VK_RETURN: //Enter°´¼üÊÂ¼þ 
-			OnClose();
+			OnBnClickedButtonDosearch();
 			return true;  
 		default:  
 			;  
