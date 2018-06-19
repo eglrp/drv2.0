@@ -1233,7 +1233,7 @@ void PickModelHandler::MakeBuilding3DBorder(osg::Vec3d vi)
 						std::string str = i->second.getString();
 						//处理：有小数点的字段保留小数点后两位
 						int n = str.find(".");
-						if ( n != -1)
+						if ( n != -1 && isdigit(str[str.size() - 1]))
 						{
 							str = str.substr(0,n+3<=str.length()?n+3:str.length());
 						}

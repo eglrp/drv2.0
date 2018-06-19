@@ -722,7 +722,7 @@ void CDlgSearchAdv::OnNMClickList1(NMHDR *pNMHDR, LRESULT *pResult)
 				continue;
 			}
 			int n = str.find(".");
-			if ( n != -1)
+			if ( n != -1 && isdigit(str[str.size() - 1]))
 			{
 				str = str.substr(0,n+3<=str.length()?n+3:str.length());
 			}
