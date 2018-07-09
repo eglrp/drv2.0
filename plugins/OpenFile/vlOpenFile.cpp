@@ -440,28 +440,15 @@ bool CvlOpenFile::OnClick()
 				if (isPoints)
 				{
 					//热点box
-					osg::Billboard* geodeb = new osg::Billboard();
-					geodeb->setMode(osg::Billboard::AXIAL_ROT);
-
-					osg::ref_ptr<osg::DrawPixels> bmp= new osg::DrawPixels;
-					//bmp->setPosition( osg::Vec3( vecPt[i].x(),vecPt[i].y(),vecPt[i].z()+3));
-					bmp->setImage( osgDB::readImageFile("F:\\2_DRV开发\\新建文件夹\\EarthMatrixRibbon\\res\\MAIN.png"));
-					bmp->setStateSet(stateset1);
-					geodeb->addDrawable(bmp);
-					geodeb->setPosition(0,osg::Vec3( vecPt[i].x(),vecPt[i].y(),vecPt[i].z()+3));
-					/*osg::ref_ptr< osg::Geode> geode= new osg::Geode;
-					geode->addDrawable( bmp.get());*/
-
-					//bmp->setImage(osgDB::readImageFile("F:\\2_DRV开发\\新建文件夹\\EarthMatrixRibbon\\MAIN.png"));
-					/*osg::ref_ptr<osg::ShapeDrawable> box = new osg::ShapeDrawable(new osg::Box(osg::Vec3(vecPt[i].x(),vecPt[i].y(),vecPt[i].z()+3), 2 ));
+					osg::ref_ptr<osg::ShapeDrawable> box = new osg::ShapeDrawable(new osg::Box(osg::Vec3(vecPt[i].x(),vecPt[i].y(),vecPt[i].z()+3), 2 ));
 					box->setColor(osg::Vec4(14/255.0,108/255.0,195/255.0,0.3));
 					box->setStateSet(stateset1);
 					osg::ref_ptr<osg::ShapeDrawable> box1 = new osg::ShapeDrawable(new osg::Box(osg::Vec3(vecPt[i].x(),vecPt[i].y(),vecPt[i].z()+3), 2 ));
 					box1->setColor(osg::Vec4(14/255.0,108/255.0,195/255.0,0.3));
-					box1->setStateSet(stateset1);*/
-					tGroup->addChild(geodeb);
-					//geode->addDrawable(geodeb);
-					//geode1->addDrawable(geodeb);
+					box1->setStateSet(stateset1);
+
+					geode->addDrawable(box.get());
+					geode1->addDrawable(box1.get());
 				}
 				else if (isBuilding && buildingFlag)//添加柱状图信息
 				{
@@ -520,20 +507,16 @@ bool CvlOpenFile::OnClick()
 					geode1->addDrawable(lineGeom);
 				}
 				
-
 				lode->addChild(geode,0.0f,500.0f);
 				lode->addChild(text,0.0f,500.0f);
 
 				lode->addChild(geode1,500.0f,FLT_MAX);
 				lode->addChild(text1,500.0f,FLT_MAX);
 
-				tGroup->setName("物联设备");
-				lode->addChild(tGroup,0,FLT_MAX);
 				if (textTop != NULL)
 				{
 					lode->addChild(textTop,0,FLT_MAX);
 				}
-				
 				group->addChild(lode);
 			}
 			group->setName(FileNameEx);
@@ -548,39 +531,6 @@ bool CvlOpenFile::OnClick()
 				spViewer3D->GetLayersArray()->Add(CString(filename.c_str()));
 			spViewer3D->GetLayerCheck()->Add(_T("1"));
 			spViewer3D->AddNode(group,nullptr);
-
-			osg::Group* pGroup = spViewer3D->getSceneData()->asGroup();
-			int n = pGroup->getNumChildren();
-			for (int i = 0;i<n;++i)
-			{
-				std::string s = pGroup->getChild(i)->getName();
-				if (s.find("热点.shp") != -1)
-				{
-					int n1 = pGroup->getChild(i)->asGroup()->getNumChildren();
-					for (int i1 = 0;i1 < n1;++i1)
-					{
-						osg::LOD* lod = dynamic_cast<osg::LOD*>(pGroup->getChild(i)->asGroup()->getChild(i1));
-						if (lod)
-						{
-							for (int j = 0;j<lod->getNumChildren();++j)
-							{
-								if (lod->getChild(j)->getName() == "物联设备")
-								{
-									osg::Group* group1 = lod->getChild(j)->asGroup();
-									for (int k = 0;k<group1->getNumChildren();k++)
-									{
-										osg::Billboard* bb = dynamic_cast<osg::Billboard*>(group1->getChild(k));
-										osg::ref_ptr<osg::DrawPixels> bmp = dynamic_cast<osg::DrawPixels*>(bb->getDrawable(0));
-										bmp->setImage(osgDB::readImageFile("F:\\2_DRV开发\\新建文件夹\\EarthMatrixRibbon\\MAIN.png"));
-									}
-									break;
-								}
-							}
-						}
-					}
-					break;
-				}
-			}
 		}	
 		
 #else

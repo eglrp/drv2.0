@@ -483,7 +483,7 @@ void CDataManager::OnNodeAdd(x3::IObject* pBuddy, osg::Node* pNode, osg::Node* p
 	}
 	//////////////////////////////////////////////////////////////////////////
 
-	const osg::BoundingSphere& bs = pNode->getBound();
+	const osg::BoundingSphere& bs = pNode->computeBound();
 	if (fabs(bs.radius()) <= DBL_EPSILON) // invalid node
 		return;
 
