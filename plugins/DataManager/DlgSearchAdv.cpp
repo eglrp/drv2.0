@@ -73,6 +73,10 @@ END_MESSAGE_MAP()
 
 void CDlgSearchAdv::OnBnClickedButtonDosearch()
 {
+	if (m_pAttInfoWin)
+	{
+		m_pAttInfoWin->OnClose();
+	}
 	//获取两个搜索关键字
 	m_cKey.GetWindowText(m_sKey);
 	m_cKey2.GetWindowText(m_sKey2);
@@ -153,36 +157,36 @@ void CDlgSearchAdv::DoSearch()
 
 			const osgEarth::Features::AttributeTable& attrs = feature->getAttrs();
 
-			if (!m_sField2.IsEmpty() && !m_sKey2.IsEmpty())//如果第二个条件有效
+			if (/*!m_sField2.IsEmpty() &&*/ !m_sKey2.IsEmpty())//如果第二个条件有效
 			{
 				int n = 0;
+				bool bFind1 = false,bFind2 = false;
 				for( osgEarth::Features::AttributeTable::const_iterator i = attrs.begin(); i != attrs.end(); ++i)
 				{
 					CString sName = CString(i->first.c_str());
 					CString sValue = CString(i->second.getString().c_str());
-					if (sValue.Find(m_sKey) >= 0 && !sValue.IsEmpty())
-					{
-						if (!m_sField.IsEmpty())
+					if (sValue.Find(m_sKey) >= 0 && !sValue.IsEmpty() && !bFind1)
+					{	
+						if (m_sField == sName || m_sField.IsEmpty())
 						{
-							if (m_sField == sName)
+							n++;
+							bFind1 = true;
+							if (n == 2)
 							{
-								n++;
-								if (n == 2)
-								{
-									bFinded = true;
-									m_cList.InsertItem(0, _T("1"));
-									vFeature.insert(vFeature.begin(), feature);
-									v.insert(v.begin(), part);
-									break;
-								}
+								bFinded = true;
+								m_cList.InsertItem(0, _T("1"));
+								vFeature.insert(vFeature.begin(), feature);
+								v.insert(v.begin(), part);
+								break;
 							}
 						}
 					}
-					else if (sValue.Find(m_sKey2) >= 0 && !sValue.IsEmpty())
+					else if (sValue.Find(m_sKey2) >= 0 && !sValue.IsEmpty() && !bFind2)
 					{
-						if (m_sField2 == sName)
+						if (m_sField2 == sName || m_sField2.IsEmpty())
 						{
 							n++;
+							bFind2 = true;
 							if (n == 2)
 							{
 								bFinded = true;
@@ -718,7 +722,7 @@ void CDlgSearchAdv::OnNMClickList1(NMHDR *pNMHDR, LRESULT *pResult)
 				continue;
 			}
 			int n = str.find(".");
-			if ( n != -1)
+			if ( n != -1 && isdigit(str[str.size() - 1]))
 			{
 				str = str.substr(0,n+3<=str.length()?n+3:str.length());
 			}
@@ -818,12 +822,12 @@ BOOL CDlgSearchAdv::OnInitDialog()
 	m_cList.SetFont(&m_font1);
 	m_cList.SetRowHeigt(25);
 	m_font.CreateFont(
-		24,                        // nHeight
+		20,                        // nHeight
 		0,                         // nWidth
 		0,                         // nEscapement
 		0,                         // nOrientation
 		FW_BOLD,                 // nWeight
-		TRUE,                     // bItalic
+		FALSE,                     // bItalic
 		FALSE,                     // bUnderline
 		0,                         // cStrikeOut
 		ANSI_CHARSET,              // nCharSet
@@ -1066,13 +1070,14 @@ void CDlgSearchAdv::OnClose()
 		{
 			if (m_pAttInfoWin->IsWindowVisible())
 			{
-				CBackgroundDlg* dlg = (CBackgroundDlg*)(parent1);
+				/*CBackgroundDlg* dlg = (CBackgroundDlg*)(parent1);
 				if (dlg)
 				{
-					dlg->DestroyWindow();
+				dlg->DestroyWindow();
 				}
 				DestroyWindow();
-				return;
+				return;*/
+				m_pAttInfoWin->OnClose();
 			}
 		}
 		m_spViewer3D->RemoveNode(gTemp);

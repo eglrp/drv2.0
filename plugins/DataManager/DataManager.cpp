@@ -483,7 +483,7 @@ void CDataManager::OnNodeAdd(x3::IObject* pBuddy, osg::Node* pNode, osg::Node* p
 	}
 	//////////////////////////////////////////////////////////////////////////
 
-	const osg::BoundingSphere& bs = pNode->getBound();
+	const osg::BoundingSphere& bs = pNode->computeBound();
 	if (fabs(bs.radius()) <= DBL_EPSILON) // invalid node
 		return;
 
@@ -1766,7 +1766,7 @@ void CDataManager::OnNMClickList(NMHDR *pNMHDR, LRESULT *pResult)
 			}
 			
 			int n = str.find(".");
-			if ( n != -1)
+			if ( n != -1 && isdigit(str[str.size() - 1]))
 			{
 				str = str.substr(0,n+3<=str.length()?n+3:str.length());
 			}
