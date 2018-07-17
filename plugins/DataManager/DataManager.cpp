@@ -2339,6 +2339,7 @@ void CDataManager::ShowAttWin()
     if (m_pAttInfoWin == NULL)
     {
         m_pAttInfoWin = new CDlgAttInfo();
+		m_pAttInfoWin->_rect = spViewer3D->rectView3D;
         m_pAttInfoWin->parent = (CObject*) this;
         if (!m_pAttInfoWin->Create(IDD_DIALOG_ENTINFO))
         {
@@ -2380,7 +2381,8 @@ void CDataManager::ShowAttWin()
 	m_pAttInfoWin->ScreenToClient(&r1);
 	m_pAttInfoWin->m_quitBtn.MoveWindow(&r1);
 	//m_pAttInfoWin->setupPolygonRegion();
-
+	m_pAttInfoWin->pChild->ShowWindow(SW_HIDE);
+	m_pAttInfoWin->pChild1->ShowWindow(SW_HIDE);
 }
 
 void CDataManager::OnBnClickedButtonSearch()

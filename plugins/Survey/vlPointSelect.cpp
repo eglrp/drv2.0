@@ -1229,6 +1229,8 @@ void PickModelHandler::MakeBuilding3DBorder(osg::Vec3d vi)
 					//p->m_pAttInfoWin->MovetoPoint(m_spViewer3D->rectView3D);
 					p->m_pAttInfoWin->suitHeightAndWidth(len,maxW);//调整高度和列宽
 					p->m_pAttInfoWin->UpdateWindow();
+					p->m_pAttInfoWin->pChild->ShowWindow(SW_HIDE);
+					p->m_pAttInfoWin->pChild1->ShowWindow(SW_HIDE);
 					std::string sHeight = feature->getString("Elevation");
 					double height = atof(sHeight.data());
 
@@ -1714,6 +1716,8 @@ void PickModelHandler::MakeFloor3DBorder(osgEarth::Features::Feature* feature, d
 			//p->m_pAttInfoWin->MovetoPoint(m_spViewer3D->rectView3D);
 			p->m_pAttInfoWin->suitHeightAndWidth(len,maxW);//调整高度和列宽
 			p->m_pAttInfoWin->UpdateWindow();
+			p->m_pAttInfoWin->pChild->ShowWindow(SW_HIDE);
+			p->m_pAttInfoWin->pChild1->ShowWindow(SW_HIDE);
 			std::string sHeight = feature->getString("Elevation");
 			double height = atof(sHeight.data());
 
