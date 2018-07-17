@@ -71,5 +71,7 @@ public:
 
 	int btnW;
 	int btnH;
+	RECT _rect;
+	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 };
 

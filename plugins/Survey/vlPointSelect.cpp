@@ -1865,6 +1865,7 @@ bool CvlPointSelect::Activate()
 	{
 		AFX_MANAGE_STATE_EX;
 		m_pAttInfoWin = new CAttInfoDlg();
+		m_pAttInfoWin->_rect = spViewer3D->rectView3D;
 		m_pAttInfoWin->parent = (CObject*) this; 
 		m_pAttInfoWin->prjInfo = spViewer3D->GetPrj();
 		m_pAttInfoWin->Create(IDD_DIALOG_POINTSELECT);

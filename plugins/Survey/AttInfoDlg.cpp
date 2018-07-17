@@ -56,7 +56,7 @@ BOOL CAttInfoDlg::OnInitDialog()
 	pChild = new CDlgAttInfoEx();
 	pChild->Create(IDD_DIALOG_POINTSELECTEX,this);
 	pChild->ModifyStyle(WS_CHILD,0);
-
+	pChild->_rect = _rect;
 	pChild1 = new CShowPictureDlg();
 	pChild1->Create(IDD_DIALOG_PICTURE);
 	pChild1->ModifyStyle(WS_CHILD,0);
@@ -484,9 +484,9 @@ void CAttInfoDlg::OnLButtonDown(UINT nFlags, CPoint point)
 
 	CDialogEx::OnLButtonDown(nFlags, point);
 
-	//PostMessage(WM_NCLBUTTONDOWN,
-	//	HTCAPTION,
-	//	MAKELPARAM(point.x, point.y));  //或SendMessage(WM_SYSCOMMAND,0xF012,0);   //0xF012 = SC_MOVE | HTCAPTION
+	PostMessage(WM_NCLBUTTONDOWN,
+		HTCAPTION,
+		MAKELPARAM(point.x, point.y));  //或SendMessage(WM_SYSCOMMAND,0xF012,0);   //0xF012 = SC_MOVE | HTCAPTION
 }
 
 //自适应调整行距和列宽
@@ -858,4 +858,22 @@ void CAttInfoDlg::OnBnClickedButton1Entiexit()
 {
 	// TODO: 在此添加控件通知处理程序代码
 	OnClose();
+}
+
+
+LRESULT CAttInfoDlg::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+	// TODO: Add your specialized code here and/or call the base class
+	switch(message)
+	{
+	case WM_MOVING:
+		{
+			CRect rtWnd;
+			GetClientRect(&rtWnd);
+			ClientToScreen(&rtWnd);
+			CDialogEx* dlg = dynamic_cast<CDialogEx*>(parentBk);
+			::SetWindowPos(dlg->GetSafeHwnd(), NULL, rtWnd.left, rtWnd.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE);
+		}
+	}
+	return CDialogEx::WindowProc(message, wParam, lParam);
 }
