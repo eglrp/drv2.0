@@ -47,11 +47,11 @@ public:
 	CObject* parent;
 	CObject* parentBk;
 	CQrenCodeDlg* pQren;
+	CDlgAttInfoEx* pChild;
+	CShowPictureDlg* pChild1;
 
 private:
 	CFont m_font;
-	CDlgAttInfoEx* pChild;
-	CShowPictureDlg* pChild1;
 	//房间经纬度
 	double lon;
 	double lat;
@@ -71,5 +71,7 @@ public:
 
 	int btnW;
 	int btnH;
+	RECT _rect;
+	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 };
 

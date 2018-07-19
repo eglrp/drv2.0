@@ -18,8 +18,7 @@
 #include "osgQueryVisitor.h"
 #include "osgText/Text"
 #include "osgText/Font"
-#include <osgUtil/IntersectVisitor>
-#include <osg/LineSegment>
+
 #include <osgViewer/Renderer>
 
 extern std::string s_manHole;
@@ -88,6 +87,16 @@ double PointToSegDist(double x, double y, double x1, double y1, double x2, doubl
 	double d1 = sqrt((x - x1) * (x - x1) + (y - y1) * (y - y1));
 	double d2 = sqrt((x - x2) * (x - x2) + (y - y2) * (y - y2));
 	return d1>d2?d2:d1;
+	/*double cross = (x2 - x1) * (x - x1) + (y2 - y1) * (y - y1);  
+	if (cross <= 0) return sqrt((x - x1) * (x - x1) + (y - y1) * (y - y1));  
+
+	double d2 = (x2 - x1) * (x2 - x1) + (y2 - y1) * (y2 - y1);  
+	if (cross >= d2) return sqrt((x - x2) * (x - x2) + (y - y2) * (y - y2));  
+
+	double r = cross / d2;  
+	double px = x1 + (x2 - x1) * r;  
+	double py = y1 + (y2 - y1) * r;  
+	return sqrt((x - px) * (x - px) + (py - y1) * (py - y1));  */
 }  
 
 using namespace osgEarth::Features;
@@ -169,6 +178,11 @@ bool PickModelHandler::SelectNode( const osgGA::GUIEventAdapter &ea, osgGA::GUIA
     osgViewer::View* view = dynamic_cast<osgViewer::View*>( &aa );
     _pointer.reset();
     TestOperationType();
+	//if (m_sDefLayer.Find(L".dxf") != -1 || m_sDefLayer.Find(L".DXF") != -1)//如果默认图层是dxf  ，则不需要碰撞点
+	//{
+	//	MakeBuilding3DBorder(osg::Vec3(eaX,eaY,0));
+	//	return false;
+	//}
 	firstPt = osg::Vec3d(0,0,0);
     osgUtil::LineSegmentIntersector::Intersections hits;
     if( m_spViewer3D->getViewer()->computeIntersections( ea.getX(), ea.getY(), hits ) )
@@ -415,11 +429,16 @@ CString PickModelHandler::FindSHPFile()
 {
 	USES_CONVERSION;
 	CStringArray* a = m_spViewer3D->GetLayersArray();
+	CString cs;
+	for (int i = 0; i < a->GetCount(); i++)
+	{
+		cs = a->GetAt(i);
+	}
 	if (m_sDefLayer == _T(""))
 	{
 		for (int i = 0; i < a->GetCount(); i++)
 		{
-			if (a->GetAt(i).Right(4) == L".shp" || a->GetAt(i).Right(4) == L".SHP")
+			if (a->GetAt(i).Right(4) == L".shp")
 			{
 				return a->GetAt(i);
 			}
@@ -428,8 +447,7 @@ CString PickModelHandler::FindSHPFile()
 	}
 	else
 	{
-		if (string(W2A(m_sDefLayer)).find(".shp") == -1 &&
-			string(W2A(m_sDefLayer)).find(".SHP") == -1)
+		if (string(W2A(m_sDefLayer)).find(".shp") == -1)
 		{
 			return L"";
 		}
@@ -886,46 +904,6 @@ osg::ref_ptr<osg::Billboard> PickModelHandler::createText(osg::Vec3d pos,osg::Ve
 	return geode;
 }
 
-void PickModelHandler::drawLine(osg::Group* lineGroup,std::vector<osg::Vec3d>& vecInsect,bool bDepthTest)
-{
-	if (vecInsect.size()<2)
-	{
-		return;
-	}
-	/*if (lineGroup->getNumChildren()>0)
-	{
-		lineGroup->removeChildren(0,lineGroup->getNumChildren());
-	}*/
-	
-	osg::ref_ptr<osg::Geode> _geode = new osg::Geode();
-	_geode->setDataVariance(osg::Object::DYNAMIC);
-	_geode->getOrCreateStateSet()->setAttributeAndModes( new osg::LineWidth(2.0f) );
-	if (bDepthTest)
-	{
-		_geode->getOrCreateStateSet()->setMode( GL_DEPTH_TEST, osg::StateAttribute::ON );
-	}
-	else
-		_geode->getOrCreateStateSet()->setMode( GL_DEPTH_TEST, osg::StateAttribute::OFF );
-	_geode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
-
-	osg::ref_ptr<osg::Geometry> _geometry1 = new osg::Geometry();
-	_geometry1->setDataVariance(osg::Object::DYNAMIC);
-	osg::ref_ptr<osg::Vec4Array> shared_colors = new osg::Vec4Array;
-	shared_colors->push_back(osg::Vec4(1.0f, 1.0f, 0.0f, 1.0f));
-	_geometry1->setColorArray(shared_colors.get(), osg::Array::BIND_PER_PRIMITIVE_SET);
-
-	osg::ref_ptr<osg::Vec3Array> vert1 = new osg::Vec3Array();
-	
-	for (int i = 0;i<vecInsect.size() ;i++)
-	{
-		vert1->push_back(vecInsect[i]);
-	}
-	_geometry1->setVertexArray(vert1.get());
-	_geometry1->addPrimitiveSet(new osg::DrawArrays(osg::PrimitiveSet::LINE_STRIP, 0, vert1->size()));
-	_geode->addDrawable(_geometry1);
-	lineGroup->addChild(_geode);
-}
-
 void PickModelHandler::MakeBuilding3DBorder(osg::Vec3d vi)
 {
     USES_CONVERSION;
@@ -1251,6 +1229,8 @@ void PickModelHandler::MakeBuilding3DBorder(osg::Vec3d vi)
 					//p->m_pAttInfoWin->MovetoPoint(m_spViewer3D->rectView3D);
 					p->m_pAttInfoWin->suitHeightAndWidth(len,maxW);//调整高度和列宽
 					p->m_pAttInfoWin->UpdateWindow();
+					p->m_pAttInfoWin->pChild->ShowWindow(SW_HIDE);
+					p->m_pAttInfoWin->pChild1->ShowWindow(SW_HIDE);
 					std::string sHeight = feature->getString("Elevation");
 					double height = atof(sHeight.data());
 
@@ -1736,6 +1716,8 @@ void PickModelHandler::MakeFloor3DBorder(osgEarth::Features::Feature* feature, d
 			//p->m_pAttInfoWin->MovetoPoint(m_spViewer3D->rectView3D);
 			p->m_pAttInfoWin->suitHeightAndWidth(len,maxW);//调整高度和列宽
 			p->m_pAttInfoWin->UpdateWindow();
+			p->m_pAttInfoWin->pChild->ShowWindow(SW_HIDE);
+			p->m_pAttInfoWin->pChild1->ShowWindow(SW_HIDE);
 			std::string sHeight = feature->getString("Elevation");
 			double height = atof(sHeight.data());
 
@@ -1887,6 +1869,7 @@ bool CvlPointSelect::Activate()
 	{
 		AFX_MANAGE_STATE_EX;
 		m_pAttInfoWin = new CAttInfoDlg();
+		m_pAttInfoWin->_rect = spViewer3D->rectView3D;
 		m_pAttInfoWin->parent = (CObject*) this; 
 		m_pAttInfoWin->prjInfo = spViewer3D->GetPrj();
 		m_pAttInfoWin->Create(IDD_DIALOG_POINTSELECT);

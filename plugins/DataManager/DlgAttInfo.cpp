@@ -54,6 +54,7 @@ BOOL CDlgAttInfo::OnInitDialog()
 	pChild->ModifyStyle(WS_CHILD,0);
 	if (pChild)
 	{
+		pChild->_rect = _rect;
 		pChild->ShowWindow(SW_HIDE);
 	}
 	pChild1 = new CShowPictureDlg();
@@ -362,9 +363,9 @@ void CDlgAttInfo::OnLButtonDown(UINT nFlags, CPoint point)
 {
 	// TODO: 在此添加消息处理程序代码和/或调用默认值
 	CDialog::OnLButtonDown(nFlags, point);
-	//PostMessage(WM_NCLBUTTONDOWN,
-	//	HTCAPTION,
-	//	MAKELPARAM(point.x, point.y));  //或SendMessage(WM_SYSCOMMAND,0xF012,0);   //0xF012 = SC_MOVE | HTCAPTION
+	PostMessage(WM_NCLBUTTONDOWN,
+		HTCAPTION,
+		MAKELPARAM(point.x, point.y));  //或SendMessage(WM_SYSCOMMAND,0xF012,0);   //0xF012 = SC_MOVE | HTCAPTION
 }
 
 //自适应调整行距和列宽
@@ -618,4 +619,23 @@ HBRUSH CDlgAttInfo::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 	return m_brBk;
 	// TODO:  如果默认的不是所需画笔，则返回另一个画笔
 	return hbr;
+}
+
+
+LRESULT CDlgAttInfo::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+	// TODO: Add your specialized code here and/or call the base class
+
+	switch(message)
+	{
+	case WM_MOVING:
+		{
+			CRect rtWnd;
+			GetClientRect(&rtWnd);
+			ClientToScreen(&rtWnd);
+			CDialogEx* dlg = dynamic_cast<CDialogEx*>(parentBk);
+			::SetWindowPos(dlg->GetSafeHwnd(), NULL, rtWnd.left, rtWnd.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE);
+		}
+	}
+	return CDialog::WindowProc(message, wParam, lParam);
 }

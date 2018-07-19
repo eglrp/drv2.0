@@ -253,10 +253,8 @@ bool CvlLineSurvey::Activate()
 bool CvlLineSurvey::Deactivate()
 {
 	x3::Object<IViewer3D> spViewer3D(m_spBuddy);
-	if (m_spLineSurveyEventHandler)
-	{
-		m_spLineSurveyEventHandler->_group->removeChild(m_spLineSurveyEventHandler->lineGroup);
-	}
+	
+	m_spLineSurveyEventHandler->_group->removeChild(m_spLineSurveyEventHandler->lineGroup);
 	spViewer3D->getViewer()->removeEventHandler(m_spLineSurveyEventHandler.get());
 	m_spLineSurveyEventHandler = nullptr;
 	bInSurvey = false;
