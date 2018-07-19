@@ -37,8 +37,6 @@ public:
 
 	int btnW;
 	int btnH;
-	RECT _rect;
-
 public:
 	void InsertRow(CString sName, CString sValue);
 	void RemoveAllRows();
@@ -59,5 +57,4 @@ public:
 	CButton m_quitBtn;
 	afx_msg void OnBnClickedButtonexit1();
 	afx_msg HBRUSH OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor);
-	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
 };

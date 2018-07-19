@@ -37,6 +37,7 @@ public:
 	bool SetBuddy(x3::IObject* val);
 	void AddCylinderNode(double x, double y, double z, double r);
 	osg::ref_ptr<osg::Geode> AddPolygonNode(osg::Vec3Array* arr,osg::Vec4 color = osg::Vec4(1.0,1.0,0.0,0.8));
+	void drawLine(osg::Group* lineGroup,std::vector<osg::Vec3d>& vecInsect,bool bDepthTest = false);
 	osg::ref_ptr<osg::Group> gTemp;
 
 protected:
@@ -96,6 +97,7 @@ public:
 	std::string queryOSG(osg::Vec3d v,osg::BoundingBox& box);
 	bool queryDXF(osg::Vec3d v,_DXF::DL_DATA& dlData);
 	void MakeBuilding3DBorder(osg::Vec3d v);
+
 	void MakeFloor3DBorder(osgEarth::Features::Feature*, double dFloor, double dCeil,osg::Vec4 color = osg::Vec4(1,1,0,1));
 	CString FindSHPFile();
 	void Clear();
