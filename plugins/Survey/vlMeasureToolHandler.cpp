@@ -80,7 +80,7 @@ void CvlMeasureToolHandler::rebuild()
     _geode->getOrCreateStateSet()->setAttributeAndModes( new osg::Point(4.0f) );
     _geode->getOrCreateStateSet()->setAttributeAndModes( new osg::LineWidth(2.0f) );
     _geode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
-
+	_geode->getOrCreateStateSet()->setMode( GL_DEPTH_TEST, osg::StateAttribute::OFF );
     _positionAttitudeTransform = new osg::PositionAttitudeTransform();
     _positionAttitudeTransform->setDataVariance(osg::Object::DYNAMIC);
     _positionAttitudeTransform->setPosition(_originPos);
