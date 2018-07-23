@@ -100,7 +100,7 @@ void LineSurveyEventHandler::drawLine(osg::Group* lineGroup,vector<osg::Vec3d>& 
 	_geode->setDataVariance(osg::Object::DYNAMIC);
 	_geode->getOrCreateStateSet()->setAttributeAndModes( new osg::LineWidth(2.0f) );
 	_geode->getOrCreateStateSet()->setMode( GL_LIGHTING, osg::StateAttribute::OFF );
-	_geode->getOrCreateStateSet()->setMode( GL_DEPTH_TEST, osg::StateAttribute::ON );
+	_geode->getOrCreateStateSet()->setMode( GL_DEPTH_TEST, osg::StateAttribute::OFF );
 
 	osg::ref_ptr<osg::Geometry> _geometry1 = new osg::Geometry();
 	_geometry1->setDataVariance(osg::Object::DYNAMIC);
@@ -253,8 +253,10 @@ bool CvlLineSurvey::Activate()
 bool CvlLineSurvey::Deactivate()
 {
 	x3::Object<IViewer3D> spViewer3D(m_spBuddy);
-	
-	m_spLineSurveyEventHandler->_group->removeChild(m_spLineSurveyEventHandler->lineGroup);
+	if (m_spLineSurveyEventHandler)
+	{
+		m_spLineSurveyEventHandler->_group->removeChild(m_spLineSurveyEventHandler->lineGroup);
+	}
 	spViewer3D->getViewer()->removeEventHandler(m_spLineSurveyEventHandler.get());
 	m_spLineSurveyEventHandler = nullptr;
 	bInSurvey = false;

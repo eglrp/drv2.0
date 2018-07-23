@@ -56,12 +56,13 @@ BOOL CAttInfoDlg::OnInitDialog()
 	pChild = new CDlgAttInfoEx();
 	pChild->Create(IDD_DIALOG_POINTSELECTEX,this);
 	pChild->ModifyStyle(WS_CHILD,0);
-	pChild->_rect = _rect;
+
 	pChild1 = new CShowPictureDlg();
 	pChild1->Create(IDD_DIALOG_PICTURE);
 	pChild1->ModifyStyle(WS_CHILD,0);
 	if (pChild!= NULL)
 	{
+		pChild->_rect = _rect;
 		pChild->ShowWindow(SW_HIDE);
 	}
 	if (pChild1!= NULL)

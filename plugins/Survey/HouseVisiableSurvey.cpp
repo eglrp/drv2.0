@@ -463,6 +463,7 @@ CHouseVisiableSurvey::CHouseVisiableSurvey(void)
 	Description(GETSTRINGW(app.c_str(), L"Description", L"房间可视分析"));
 	BitmapName(GETSTRINGW(app.c_str(), L"BitmapName", L"LineSurvey")); 
 	bInSurvey = false;
+	bDeactive = false;
 	p_mDLGHouseVisiableSurveyWin = nullptr;
 	//p_mHouseVisiableSurveyHandler = nullptr;
 }
@@ -555,11 +556,17 @@ bool CHouseVisiableSurvey::Activate()
 
 	p_mDLGHouseVisiableSurveyWin->MoveWindow(&r);
 	bInSurvey = true;
+	bDeactive = false;
 	return true;
 }
 
 bool CHouseVisiableSurvey::Deactivate()
 {
+	if (bDeactive)
+	{
+		return true;
+	}
+	bDeactive = true;
 	x3::Object<IViewer3D> spViewer3D(m_spBuddy);
 	if (p_mDLGHouseVisiableSurveyWin)
 	{
@@ -569,7 +576,10 @@ bool CHouseVisiableSurvey::Deactivate()
 	}
 
 	spViewer3D->getViewer()->removeEventHandler( g_mHouseVisiableSurveyHandler );
-	spViewer3D->RemoveNode(g_mHouseVisiableSurveyHandler->gTemp);
+	if (g_mHouseVisiableSurveyHandler->gTemp)
+	{
+		spViewer3D->RemoveNode(g_mHouseVisiableSurveyHandler->gTemp);
+	}
 	g_mHouseVisiableSurveyHandler = nullptr;
 	bInSurvey = false;
 	return true;
