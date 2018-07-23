@@ -95,6 +95,9 @@ public:
 	afx_msg void OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct);
 	CComboBox m_cFields2;
 	CEdit m_cKey2;
+	RECT _rect;
+	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+	afx_msg void OnLButtonDown(UINT nFlags, CPoint point);
 };
 
 

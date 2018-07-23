@@ -1,4 +1,4 @@
-// DlgSearchAdv.cpp : ÊµÏÖÎÄ¼ş
+ï»¿// DlgSearchAdv.cpp : å®ç°æ–‡ä»¶
 //
 
 #include "stdafx.h"
@@ -15,7 +15,7 @@
 #include "afxdialogex.h"
 #include "DataManager.h"
 #include "BackgroundDlg.h"
-// CDlgSearchAdv ¶Ô»°¿ò
+// CDlgSearchAdv å¯¹è¯æ¡†
 
 IMPLEMENT_DYNAMIC(CDlgSearchAdv, CDialogEx)
 
@@ -23,7 +23,7 @@ IMPLEMENT_DYNAMIC(CDlgSearchAdv, CDialogEx)
 	: CDialogEx(CDlgSearchAdv::IDD, pParent)
 	, m_lowValue(_T(""))
 	, m_upValue(_T(""))
-	, m_numResults(_T("¹² 0 Ìõ"))
+	, m_numResults(_T("å…± 0 æ¡"))
 {
 	dStep = 1;
 	bFindedStart = false;
@@ -65,10 +65,11 @@ BEGIN_MESSAGE_MAP(CDlgSearchAdv, CDialogEx)
 	ON_WM_CTLCOLOR()
 	ON_BN_CLICKED(IDC_BUTTON_SEARCHADVEXIT, &CDlgSearchAdv::OnBnClickedButtonSearchadvexit)
 	ON_WM_DRAWITEM()
+	ON_WM_LBUTTONDOWN()
 END_MESSAGE_MAP()
 
 
-// CDlgSearchAdv ÏûÏ¢´¦Àí³ÌĞò
+// CDlgSearchAdv æ¶ˆæ¯å¤„ç†ç¨‹åº
 
 
 void CDlgSearchAdv::OnBnClickedButtonDosearch()
@@ -77,10 +78,10 @@ void CDlgSearchAdv::OnBnClickedButtonDosearch()
 	{
 		m_pAttInfoWin->OnClose();
 	}
-	//»ñÈ¡Á½¸öËÑË÷¹Ø¼ü×Ö
+	//è·å–ä¸¤ä¸ªæœç´¢å…³é”®å­—
 	m_cKey.GetWindowText(m_sKey);
 	m_cKey2.GetWindowText(m_sKey2);
-	//ÅĞ¶ÏshpÎÄ¼şÊÇ·ñÓĞĞ§
+	//åˆ¤æ–­shpæ–‡ä»¶æ˜¯å¦æœ‰æ•ˆ
 	if (m_sShp == _T(""))
 	{
 		return;
@@ -95,7 +96,7 @@ void CDlgSearchAdv::OnBnClickedButtonDosearch()
 		DoSearch();
 	
 	char msg[99];
-	sprintf_s(msg,"¹² %d Ìõ",vFeature.size());
+	sprintf_s(msg,"å…± %d æ¡",vFeature.size());
 	std::string str(msg);
 	m_numResults = CString(str.c_str());
 	UpdateData(FALSE);
@@ -125,11 +126,11 @@ void CDlgSearchAdv::DoSearch()
 		path = T2A(sProjDir + _T("\\") + CString(FileNameEx.c_str()));
 	}
 
-	if (m_sKey == _T(""))//Èç¹ûµÚÒ»¸öËÑË÷¹Ø¼ü×ÖÎª¿Õ ·µ»Ø
+	if (m_sKey == _T(""))//å¦‚æœç¬¬ä¸€ä¸ªæœç´¢å…³é”®å­—ä¸ºç©º è¿”å›
 	{
 		return;
 	}
-	//»ñÈ¡Á½¸öËÑË÷×Ö¶Î
+	//è·å–ä¸¤ä¸ªæœç´¢å­—æ®µ
 	m_cFields.GetWindowText(m_sField);
 	m_cFields2.GetWindowText(m_sField2);
 
@@ -146,7 +147,7 @@ void CDlgSearchAdv::DoSearch()
 	vFeature.clear();
 	while(cursor->hasMore())
 	{
-		//Êä³öfeatureÖĞµÄĞÅÏ¢
+		//è¾“å‡ºfeatureä¸­çš„ä¿¡æ¯
 		osgEarth::Features::Feature* feature = cursor->nextFeature();
 		osgEarth::Symbology::GeometryIterator parts (feature->getGeometry(), false);
 
@@ -157,7 +158,7 @@ void CDlgSearchAdv::DoSearch()
 
 			const osgEarth::Features::AttributeTable& attrs = feature->getAttrs();
 
-			if (/*!m_sField2.IsEmpty() &&*/ !m_sKey2.IsEmpty())//Èç¹ûµÚ¶ş¸öÌõ¼şÓĞĞ§
+			if (/*!m_sField2.IsEmpty() &&*/ !m_sKey2.IsEmpty())//å¦‚æœç¬¬äºŒä¸ªæ¡ä»¶æœ‰æ•ˆ
 			{
 				int n = 0;
 				bool bFind1 = false,bFind2 = false;
@@ -199,7 +200,7 @@ void CDlgSearchAdv::DoSearch()
 					}
 				}
 			}
-			else //·ñÔòÖ»°´µÚÒ»¸öÌõ¼şËÑË÷
+			else //å¦åˆ™åªæŒ‰ç¬¬ä¸€ä¸ªæ¡ä»¶æœç´¢
 				for( osgEarth::Features::AttributeTable::const_iterator i = attrs.begin(); i != attrs.end(); ++i)
 				{
 					CString sName = CString(i->first.c_str());
@@ -299,7 +300,7 @@ void CDlgSearchAdv::DoSearchWithFilter()
 	vFeature.clear();
 	while(cursor->hasMore())
 	{
-		//Êä³öfeatureÖĞµÄĞÅÏ¢
+		//è¾“å‡ºfeatureä¸­çš„ä¿¡æ¯
 		osgEarth::Features::Feature* feature = cursor->nextFeature();
 		osgEarth::Symbology::GeometryIterator parts (feature->getGeometry(), false);
 
@@ -378,7 +379,7 @@ osg::ref_ptr<osg::Geode> CDlgSearchAdv::AddPolygonNode(osg::Vec3Array* arr,osg::
 	geode->addDrawable(polyGeom);
 
 	CString s;
-	s.Format(_T("Ïß"));
+	s.Format(_T("çº¿"));
 	geode->setName(W2A(s.GetBuffer(0)));
 
 	osg::StateSet* ss = geode->getOrCreateStateSet();
@@ -462,7 +463,7 @@ void CDlgSearchAdv::MakeBuildingStruct(std::string sTH,std::string sZ,osg::Vec4 
 	}
 	gTemp->addChild(AddPolygonNode(v3Top.get(),color));
 
-	gTemp->setName("Ïß¿ò");
+	gTemp->setName("çº¿æ¡†");
 	m_spViewer3D->AddNode(gTemp);
 
 #ifdef _2D
@@ -483,8 +484,8 @@ double CDlgSearchAdv::GetBuildingHeight()
 	ds = dStartHeight;
 	de = dEndHeight;
 
-	//´Ó0Ã×¿ªÊ¼£¬Ã¿0.5Ã×¼ÆËãÒ»´Î·¶Î§ÄÚµÄºáÇĞµãµÄZÖµ£¬Ò»Ö±¼ÆËãµ½100Ã×
-	//µÃµ½200¸öµã£¬È¡200¸öµãÖĞµÄ×î´óÖµ
+	//ä»0ç±³å¼€å§‹ï¼Œæ¯0.5ç±³è®¡ç®—ä¸€æ¬¡èŒƒå›´å†…çš„æ¨ªåˆ‡ç‚¹çš„Zå€¼ï¼Œä¸€ç›´è®¡ç®—åˆ°100ç±³
+	//å¾—åˆ°200ä¸ªç‚¹ï¼Œå–200ä¸ªç‚¹ä¸­çš„æœ€å¤§å€¼
 	double aHeight[1024] = {0};
 	int n = 0;
 	for (double h = ds; h < de; h = h + dStep)
@@ -530,7 +531,7 @@ double CDlgSearchAdv::GetBuildingHeight()
 
 bool CDlgSearchAdv::BuildingInThisHeight(double height, int & nCrossNum)
 {
-	//½¨ÖşÎïµÄ·¶Î§×ø±ê
+	//å»ºç­‘ç‰©çš„èŒƒå›´åæ ‡
 	osg::ref_ptr<osg::Vec3Array> allPoints = new osg::Vec3Array;
 	allPoints = m_geoPart->toVec3Array();
 
@@ -552,7 +553,7 @@ bool CDlgSearchAdv::BuildingInThisHeight(double height, int & nCrossNum)
 		for(osgUtil::PlaneIntersector::Intersections::iterator it = pi->getIntersections().begin();
 			it != pi->getIntersections().end(); it++)
 		{
-			//½»µã×ø±ê
+			//äº¤ç‚¹åæ ‡
 			std::vector<osg::Vec3d> intersectPoints = it->polyline;
 
 			//osg::Geode* geode=new osg::Geode;
@@ -576,7 +577,7 @@ bool CDlgSearchAdv::BuildingInThisHeight(double height, int & nCrossNum)
 
 			//osg::ref_ptr<osg::MatrixTransform> spMatrixTransfrom = new osg::MatrixTransform(*(it->matrix.get()));
 			//spMatrixTransfrom->addChild(geode);
-			//spMatrixTransfrom->setName(("Ïà½»Ãæ"));
+			//spMatrixTransfrom->setName(("ç›¸äº¤é¢"));
 			//m_spViewer3D->AddNode(spMatrixTransfrom);
 		}
 	}
@@ -587,15 +588,16 @@ bool CDlgSearchAdv::BuildingInThisHeight(double height, int & nCrossNum)
 void CDlgSearchAdv::ShowAttWin()
 {
 	AFX_MANAGE_STATE_EX;
-
+	
 	CBackgroundDlg* dlg = nullptr;
 	if (m_pAttInfoWin == NULL)
 	{
 		m_pAttInfoWin = new CDlgAttInfo();
+		m_pAttInfoWin->_rect = _rect;
 		m_pAttInfoWin->parent = (CObject*) this;
 		if (!m_pAttInfoWin->Create(IDD_DIALOG_ENTINFO))
 		{
-			AfxMessageBox(_T("´´½¨´°¿ÚÊ§°Ü"));
+			AfxMessageBox(_T("åˆ›å»ºçª—å£å¤±è´¥"));
 		}
 		dlg =  new CBackgroundDlg();
 		dlg->Create(IDD_DIALOG_BACKGROUND);
@@ -648,9 +650,9 @@ void CDlgSearchAdv::OnNMClickList1(NMHDR *pNMHDR, LRESULT *pResult)
 		//part = (osgEarth::Symbology::Geometry*)(m_cList.GetItemData(nItem));
 		m_geoPart = v.at(nItem);
 
-		std::string sGC = vFeature.at(nItem)->getString("¸ß³Ì");
-		std::string sDG = vFeature.at(nItem)->getString("µ×¸ß");
-		std::string sDG2 = vFeature.at(nItem)->getString("¶¥¸ß");
+		std::string sGC = vFeature.at(nItem)->getString("é«˜ç¨‹");
+		std::string sDG = vFeature.at(nItem)->getString("åº•é«˜");
+		std::string sDG2 = vFeature.at(nItem)->getString("é¡¶é«˜");
 		std::string sTH = vFeature.at(nItem)->getString("TH");
 		std::string sZ = vFeature.at(nItem)->getString("z");
 
@@ -666,21 +668,21 @@ void CDlgSearchAdv::OnNMClickList1(NMHDR *pNMHDR, LRESULT *pResult)
 				gTemp = nullptr;
 			}
 			osg::Vec4 color;
-			std::string sTs = vFeature.at(nItem)->getString("ÌØÊâÈËÈº");
+			std::string sTs = vFeature.at(nItem)->getString("ç‰¹æ®Šäººç¾¤");
 
 			if (!sTs.empty())
 			{
-				if (sTs == "ÉçÇøĞ£ÕıÈËÔ±")
+				if (sTs == "ç¤¾åŒºæ ¡æ­£äººå‘˜")
 				{
 					color = osg::Vec4(0,0,1,1);
 					MakeFloor3DBorder(vFeature.at(nItem), dGC+dDG, dGC + dDG2,color);
 				}
-				else if (sTs == "ĞÌÂúÊÍ·ÅÈËÔ±")
+				else if (sTs == "åˆ‘æ»¡é‡Šæ”¾äººå‘˜")
 				{
 					color = osg::Vec4(0,0,0,1);
 					MakeFloor3DBorder(vFeature.at(nItem), dGC+dDG, dGC + dDG2,color);
 				}
-				else if (sTs == "Îü¶¾ÈËÔ±")
+				else if (sTs == "å¸æ¯’äººå‘˜")
 				{
 					color = osg::Vec4(1,0,0,1);
 					MakeFloor3DBorder(vFeature.at(nItem), dGC+dDG, dGC + dDG2,color);
@@ -703,19 +705,19 @@ void CDlgSearchAdv::OnNMClickList1(NMHDR *pNMHDR, LRESULT *pResult)
 		int len = 0,maxW = 0;
 		for( osgEarth::Features::AttributeTable::const_iterator i = attrs.begin(); i != attrs.end(); ++i)
 		{
-			//Èç¹û×Ö¶ÎÎªÈ«Ó¢ÎÄ£¬Ìø¹ı²»ÏÔÊ¾
-			if (COMFUNC::allAlpha(i->first) || i->first == "¸ß³Ì" || i->first == "¶¥¸ß" || i->first == "µ×¸ß" )
+			//å¦‚æœå­—æ®µä¸ºå…¨è‹±æ–‡ï¼Œè·³è¿‡ä¸æ˜¾ç¤º
+			if (COMFUNC::allAlpha(i->first) || i->first == "é«˜ç¨‹" || i->first == "é¡¶é«˜" || i->first == "åº•é«˜" )
 			{
 				continue;
 			}
 			std::string str = i->second.getString();
-			if (CString(i->first.c_str()) == _T("¼ÒÍ¥³ÉÔ±")) 
+			if (CString(i->first.c_str()) == _T("å®¶åº­æˆå‘˜")) 
 			{
 				COMFUNC::split(str,std::string(","),m_pAttInfoWin->vName );
 				//m_pAttInfoWin->analysisString( str,m_pAttInfoWin->vName );
 
 			}
-			if (CString(i->first.c_str()) == _T("³ÉÔ±Éí·İÖ¤"))
+			if (CString(i->first.c_str()) == _T("æˆå‘˜èº«ä»½è¯"))
 			{
 				COMFUNC::split(str,std::string(","),m_pAttInfoWin->vID );
 				//m_pAttInfoWin->analysisString( str,m_pAttInfoWin->vID );
@@ -726,7 +728,7 @@ void CDlgSearchAdv::OnNMClickList1(NMHDR *pNMHDR, LRESULT *pResult)
 			{
 				str = str.substr(0,n+3<=str.length()?n+3:str.length());
 			}
-			//¼ÇÂ¼×î³¤µÄ×Ö¶ÎÖµ³¤¶È
+			//è®°å½•æœ€é•¿çš„å­—æ®µå€¼é•¿åº¦
 			if (str.size()>maxW)
 			{
 				maxW = str.size();
@@ -736,7 +738,7 @@ void CDlgSearchAdv::OnNMClickList1(NMHDR *pNMHDR, LRESULT *pResult)
 		}
 		m_pAttInfoWin->changeDlgHeight(len*30+30);
 		//m_pAttInfoWin->MovetoPoint(m_spViewer3D->rectView3D);
-		m_pAttInfoWin->suitHeightAndWidth(len,maxW);//µ÷Õû¸ß¶ÈºÍÁĞ¿í
+		m_pAttInfoWin->suitHeightAndWidth(len,maxW);//è°ƒæ•´é«˜åº¦å’Œåˆ—å®½
 		m_pAttInfoWin->UpdateWindow();
 	}
 	*pResult = 0;
@@ -790,7 +792,7 @@ void CDlgSearchAdv::MakeFloor3DBorder(osgEarth::Features::Feature* feature, doub
 			gTemp->addChild(AddPolygonNode(v3Vert.get(),color));
 		}
 
-		gTemp->setName("Ïß¿ò");
+		gTemp->setName("çº¿æ¡†");
 		m_spViewer3D->AddNode(gTemp);
 	}
 
@@ -810,14 +812,14 @@ BOOL CDlgSearchAdv::OnInitDialog()
 	CDialogEx::OnInitDialog();
 	((CButton*)GetDlgItem(IDC_CHECK_SHOW_ALL))->SetCheck(FALSE); 
 	((CButton*)GetDlgItem(IDC_CHECK_NEIBOR))->SetCheck(FALSE); 
-	// TODO:  ÔÚ´ËÌí¼Ó¶îÍâµÄ³õÊ¼»¯
+	// TODO:  åœ¨æ­¤æ·»åŠ é¢å¤–çš„åˆå§‹åŒ–
 	m_combo_filter.SetCurSel(0);
 	m_cList.SendMessage (LVM_SETEXTENDEDLISTVIEWSTYLE, 0,	LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES);
 	m_cList.setColor(RGB(253,254,255));
 	m_cList.SetTextBkColor(RGB(253,254,255));
 	m_cList.SetBkColor(RGB(253,254,255));
 	m_cList.SetTextColor(RGB(255,255,255));
-	m_font1.CreatePointFont(110, _T("ËÎÌå"));
+	m_font1.CreatePointFont(110, _T("å®‹ä½“"));
 	GetDlgItem(IDC_STATIC_RESULTS)->SetFont(&m_font1);
 	m_cList.SetFont(&m_font1);
 	m_cList.SetRowHeigt(25);
@@ -835,9 +837,9 @@ BOOL CDlgSearchAdv::OnInitDialog()
 		CLIP_DEFAULT_PRECIS,       // nClipPrecision
 		DEFAULT_QUALITY,           // nQuality
 		DEFAULT_PITCH | FF_SWISS, // nPitchAndFamily
-		_T("ºÚÌå"));                 // lpszFacename
+		_T("é»‘ä½“"));                 // lpszFacename
 	m_dlgTitle.SetFont(&m_font);
-	m_dlgTitle.SetWindowTextW(_T("¸ß¼¶²éÑ¯"));
+	m_dlgTitle.SetWindowTextW(_T("é«˜çº§æŸ¥è¯¢"));
 
 	m_brBk.CreateSolidBrush(RGB(253,254,255));
 	SetBackgroundColor(RGB(253,254,255));
@@ -847,19 +849,19 @@ BOOL CDlgSearchAdv::OnInitDialog()
 	HBITMAP   hBitmap;   
 	hBitmap = (HBITMAP)::LoadImage(   
 		NULL,   
-		_T("Data\\DRVdata\\quit.bmp"),                           // Í¼Æ¬È«Â·¾¶  
-		IMAGE_BITMAP,                          // Í¼Æ¬¸ñÊ½  
+		_T("Data\\DRVdata\\quit.bmp"),                           // å›¾ç‰‡å…¨è·¯å¾„  
+		IMAGE_BITMAP,                          // å›¾ç‰‡æ ¼å¼  
 		0,0,   
-		LR_LOADFROMFILE|LR_CREATEDIBSECTION);  // ×¢ÒâLR_LOADFROMFILE  
+		LR_LOADFROMFILE|LR_CREATEDIBSECTION);  // æ³¨æ„LR_LOADFROMFILE  
 	m_EXIT.SetBitmap(hBitmap);
 	return TRUE;  // return TRUE unless you set the focus to a control
-	// Òì³£: OCX ÊôĞÔÒ³Ó¦·µ»Ø FALSE
+	// å¼‚å¸¸: OCX å±æ€§é¡µåº”è¿”å› FALSE
 }
 
 
 void CDlgSearchAdv::OnBnClickedCheckShowAll()
 {
-	// TODO: ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë	
+	// TODO: åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 	
 	CButton* btn = ((CButton*)GetDlgItem(IDC_CHECK_SHOW_ALL));
 	if (btn->GetCheck() == BST_UNCHECKED)
 	{
@@ -882,9 +884,9 @@ void CDlgSearchAdv::OnBnClickedCheckShowAll()
 				//part = (osgEarth::Symbology::Geometry*)(m_cList.GetItemData(nItem));
 				m_geoPart = v.at(nItem);
 
-				std::string sGC = vFeature.at(nItem)->getString("¸ß³Ì");
-				std::string sDG = vFeature.at(nItem)->getString("µ×¸ß");
-				std::string sDG2 = vFeature.at(nItem)->getString("¶¥¸ß");
+				std::string sGC = vFeature.at(nItem)->getString("é«˜ç¨‹");
+				std::string sDG = vFeature.at(nItem)->getString("åº•é«˜");
+				std::string sDG2 = vFeature.at(nItem)->getString("é¡¶é«˜");
 				std::string sTH = vFeature.at(nItem)->getString("TH");
 				std::string sZ = vFeature.at(nItem)->getString("z");
 
@@ -895,22 +897,22 @@ void CDlgSearchAdv::OnBnClickedCheckShowAll()
 					double dDG2 = atof(sDG2.data());
 
 					osg::Vec4 color;
-					std::string sTs = vFeature.at(nItem)->getString("ÌØÊâÈËÈº");
+					std::string sTs = vFeature.at(nItem)->getString("ç‰¹æ®Šäººç¾¤");
 					if (!sTs.empty())
 					{
-						if (sTs == "ÉçÇøĞ£ÕıÈËÔ±")
+						if (sTs == "ç¤¾åŒºæ ¡æ­£äººå‘˜")
 						{
 							color = osg::Vec4(0,0,1,1);
 							MakeFloor3DBorderAll(vFeature.at(nItem), dGC+dDG, dGC + dDG2,group,color);
 							continue;
 						}
-						if (sTs == "ĞÌÂúÊÍ·ÅÈËÔ±")
+						if (sTs == "åˆ‘æ»¡é‡Šæ”¾äººå‘˜")
 						{
 							color = osg::Vec4(0,0,0,1);
 							MakeFloor3DBorderAll(vFeature.at(nItem), dGC+dDG, dGC + dDG2,group,color);
 							continue;
 						}
-						if (sTs == "Îü¶¾ÈËÔ±")
+						if (sTs == "å¸æ¯’äººå‘˜")
 						{
 							color = osg::Vec4(1,0,0,1);
 							MakeFloor3DBorderAll(vFeature.at(nItem), dGC+dDG, dGC + dDG2,group,color);
@@ -933,7 +935,7 @@ void CDlgSearchAdv::OnBnClickedCheckShowAll()
 			{
 				gTemp = new osg::Group();
 				gTemp->addChild(group);
-				gTemp->setName("Ïß¿ò");
+				gTemp->setName("çº¿æ¡†");
 				m_spViewer3D->AddNode(gTemp);
 			}	
 		}
@@ -1063,7 +1065,7 @@ void CDlgSearchAdv::MakeBuildingStructAll(std::string sTH,std::string sZ,osg::Gr
 
 void CDlgSearchAdv::OnClose()
 {
-	// TODO: ÔÚ´ËÌí¼ÓÏûÏ¢´¦Àí³ÌĞò´úÂëºÍ/»òµ÷ÓÃÄ¬ÈÏÖµ
+	// TODO: åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
 	if (gTemp != nullptr )
 	{
 		if (m_pAttInfoWin != NULL)
@@ -1101,7 +1103,7 @@ void CDlgSearchAdv::OnClose()
 
 void CDlgSearchAdv::OnCancel()
 {
-	// TODO: ÔÚ´ËÌí¼Ó×¨ÓÃ´úÂëºÍ/»òµ÷ÓÃ»ùÀà
+	// TODO: åœ¨æ­¤æ·»åŠ ä¸“ç”¨ä»£ç å’Œ/æˆ–è°ƒç”¨åŸºç±»
 	if (gTemp != nullptr )
 	{
 		if (m_pAttInfoWin != NULL)
@@ -1122,15 +1124,15 @@ void CDlgSearchAdv::OnCancel()
 
 BOOL CDlgSearchAdv::PreTranslateMessage(MSG* pMsg)
 {
-	// TODO: ÔÚ´ËÌí¼Ó×¨ÓÃ´úÂëºÍ/»òµ÷ÓÃ»ùÀà
+	// TODO: åœ¨æ­¤æ·»åŠ ä¸“ç”¨ä»£ç å’Œ/æˆ–è°ƒç”¨åŸºç±»
 	if (pMsg->message == WM_KEYDOWN)  
 	{  
 		switch(pMsg->wParam)  
 		{  
-		case VK_ESCAPE: //Esc°´¼üÊÂ¼ş 
+		case VK_ESCAPE: //EscæŒ‰é”®äº‹ä»¶ 
 			OnClose();
 			return true;  
-		case VK_RETURN: //Enter°´¼üÊÂ¼ş 
+		case VK_RETURN: //EnteræŒ‰é”®äº‹ä»¶ 
 			OnBnClickedButtonDosearch();
 			return true;  
 		default:  
@@ -1143,23 +1145,23 @@ BOOL CDlgSearchAdv::PreTranslateMessage(MSG* pMsg)
 
 void CDlgSearchAdv::OnBnClickedButtonSerchCircle()
 {
-	// TODO: ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	USES_CONVERSION;
 	CButton* btn = (CButton*)GetDlgItem(IDC_BUTTON_SERCH_CIRCLE);
 	CString title;
 	btn->GetWindowTextW(title);
-	if ( std::string(W2A(title)) == std::string("Ô²ĞÎÇøÓòËÑË÷"))
+	if ( std::string(W2A(title)) == std::string("åœ†å½¢åŒºåŸŸæœç´¢"))
 	{
 		if ( m_spViewer3D.valid())
 		{
 			m_pDrawAreaHandle = new CvlMeasureToolHandler(m_spViewer3D->getSceneData()->asGroup());
 			m_spViewer3D->getViewer()->addEventHandler( m_pDrawAreaHandle );
-			btn->SetWindowText(_T("¹Ø±ÕËÑË÷"));
+			btn->SetWindowText(_T("å…³é—­æœç´¢"));
 		}
 	}
 	else
 	{
-		btn->SetWindowText(_T("Ô²ĞÎÇøÓòËÑË÷"));
+		btn->SetWindowText(_T("åœ†å½¢åŒºåŸŸæœç´¢"));
 		m_pDrawAreaHandle->clear();
 		m_spViewer3D->getViewer()->removeEventHandler( m_pDrawAreaHandle );
 	}
@@ -1192,14 +1194,14 @@ HBRUSH CDlgSearchAdv::OnCtlColor(CDC* pDC, CWnd* pWnd, UINT nCtlColor)
 
 void CDlgSearchAdv::OnBnClickedButtonSearchadvexit()
 {
-	// TODO: ÔÚ´ËÌí¼Ó¿Ø¼şÍ¨Öª´¦Àí³ÌĞò´úÂë
+	// TODO: åœ¨æ­¤æ·»åŠ æ§ä»¶é€šçŸ¥å¤„ç†ç¨‹åºä»£ç 
 	OnClose();
 }
 
 
 void CDlgSearchAdv::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct)
 {
-	// TODO: ÔÚ´ËÌí¼ÓÏûÏ¢´¦Àí³ÌĞò´úÂëºÍ/»òµ÷ÓÃÄ¬ÈÏÖµ
+	// TODO: åœ¨æ­¤æ·»åŠ æ¶ˆæ¯å¤„ç†ç¨‹åºä»£ç å’Œ/æˆ–è°ƒç”¨é»˜è®¤å€¼
 	if(nIDCtl==IDC_BUTTON_DOSEARCH || nIDCtl==IDC_BUTTON_SERCH_CIRCLE || nIDCtl== IDC_CHECK_SHOW_ALL)         //checking for the button 
 	{
 		CDC dc;
@@ -1237,4 +1239,32 @@ void CDlgSearchAdv::OnDrawItem(int nIDCtl, LPDRAWITEMSTRUCT lpDrawItemStruct)
 		dc.Detach(); // Detach the Button DC
 	}                
 	CDialog::OnDrawItem(nIDCtl, lpDrawItemStruct);
+}
+
+
+LRESULT CDlgSearchAdv::WindowProc(UINT message, WPARAM wParam, LPARAM lParam)
+{
+	// TODO: Add your specialized code here and/or call the base class
+	switch(message)
+	{
+	case WM_MOVING:
+		{
+			CRect rtWnd;
+			GetClientRect(&rtWnd);
+			ClientToScreen(&rtWnd);
+			CDialogEx* dlg = dynamic_cast<CDialogEx*>(parent1);
+			::SetWindowPos(dlg->GetSafeHwnd(), NULL, rtWnd.left, rtWnd.top, 0, 0, SWP_SHOWWINDOW | SWP_NOSIZE);
+		}
+	}
+	return CDialogEx::WindowProc(message, wParam, lParam);
+}
+
+
+void CDlgSearchAdv::OnLButtonDown(UINT nFlags, CPoint point)
+{
+	// TODO: Add your message handler code here and/or call default
+	PostMessage(WM_NCLBUTTONDOWN,
+		HTCAPTION,
+		MAKELPARAM(point.x, point.y));  //ï¿½ï¿½SendMessage(WM_SYSCOMMAND,0xF012,0);   //0xF012 = SC_MOVE | HTCAPTION
+	CDialogEx::OnLButtonDown(nFlags, point);
 }

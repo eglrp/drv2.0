@@ -2399,7 +2399,9 @@ void CDataManager::OnBnClickedButtonSearch()
 
 void CDataManager::OnBnClickedButtonSearchAdv()
 {
+	x3::Object<IViewer3D> spViewer3D(m_spBuddy);
     m_pSearchAdv = new CDlgSearchAdv();
+	m_pSearchAdv->_rect = spViewer3D->rectView3D;
     m_pSearchAdv->Create(IDD_DIALOG_SEARCH_ADV);
 	CBackgroundDlg* bdlg = new CBackgroundDlg();
 	bdlg->Create(IDD_DIALOG_BACKGROUND);

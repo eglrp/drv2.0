@@ -174,7 +174,7 @@ void CDlgAttInfoEx::MovetoPoint()
 	int nWidth = r.right - r.left;
 	int nHeight = r.bottom - r.top;
 
-	if (rp.right + g_FontSize*16 + 4*edgeW + 20 <= _rect.right)
+	if (rp.right + g_FontSize*16 + 4*edgeW + 20 <= pWnd->_rect.right)
 	{
 		r.left = rp.right + 2*edgeW;
 		r.bottom = point.y;
