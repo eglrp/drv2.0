@@ -140,6 +140,8 @@ void houseVisiableSurveyHandler::getVisiableBuilding(osg::Vec3d vi)
 	}
 	else
 		mValIgnore = 0.1;
+
+	bool noneData = true;
 	while(cursor->hasMore())
 	{
 		//输出feature中的信息
@@ -155,8 +157,9 @@ void houseVisiableSurveyHandler::getVisiableBuilding(osg::Vec3d vi)
 		std::string sFloor = feature->getString("完整房间号");
 		if (sDG2.empty()||sDG.empty()||sGC.empty())
 		{
-			continue;
+			continue;;
 		}
+		noneData = false;
 		double gc = atof(sGC.c_str());
 		double dg = atof(sDG.c_str());
 		double dg2 = atof(sDG2.c_str());
@@ -211,6 +214,10 @@ void houseVisiableSurveyHandler::getVisiableBuilding(osg::Vec3d vi)
 			mHouseData.vecCoord.assign(vecIntersect.begin(),vecIntersect.end());;		
 		}
 		mVecData[CString(sFloor.c_str())] = mHouseData;
+	}
+	if (noneData)
+	{
+		return;
 	}
 	if (gTemp != nullptr)
 	{
