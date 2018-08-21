@@ -591,3 +591,137 @@ bool CHouseVisiableSurvey::Deactivate()
 	bInSurvey = false;
 	return true;
 }
+
+
+CBuildingVisiableSurvey::CBuildingVisiableSurvey(void)
+{
+	std::wstring app = x3::a2w(_getClassName());
+	Name(GETSTRINGW(app.c_str(), L"Name", L"建筑可视分析(批量)"));
+	Caption(GETSTRINGW(app.c_str(), L"Caption", L"查询搜索"));
+	Category(GETSTRINGW(app.c_str(), L"Category", L"主页"));
+	Tooltip(GETSTRINGW(app.c_str(), L"Tooltip", L"建筑可视分析(批量)"));
+	Description(GETSTRINGW(app.c_str(), L"Description", L"建筑可视分析(批量)"));
+	BitmapName(GETSTRINGW(app.c_str(), L"BitmapName", L"LineSurvey")); 
+	bInSurvey = false;
+	bDeactive = false;
+	p_mDLGBuildingVisiableSurveyWin = nullptr;
+	//p_mHouseVisiableSurveyHandler = nullptr;
+}
+
+CBuildingVisiableSurvey::~CBuildingVisiableSurvey(void)
+{
+}
+
+bool CBuildingVisiableSurvey::Initialize()
+{
+	return true;
+}
+
+bool CBuildingVisiableSurvey::UnInitialize()
+{
+	return true;
+}
+
+bool CBuildingVisiableSurvey::SetBuddy(x3::IObject* val)
+{	
+	x3::Object<IViewer3D> spViewer3D(val);
+	if( !spViewer3D.valid() )
+		return false;
+
+	if( m_spBuddy==spViewer3D )
+		return true;
+
+	m_spBuddy = spViewer3D;
+	m_val = val;
+	if( spViewer3D->getViewer()==nullptr )
+		return false;
+	return true;
+}
+
+// IUICommand
+bool CBuildingVisiableSurvey::OnClick()
+{
+	if (bInSurvey)
+	{
+		Deactivate();
+	}
+	else
+	{
+		Activate();
+
+	}
+	return true;
+}
+
+bool CBuildingVisiableSurvey::Checked()
+{
+	return bInSurvey;
+}
+
+bool CBuildingVisiableSurvey::Activate()
+{
+	x3::Object<IViewer3D> spViewer3D(m_spBuddy);
+	CString sDefLayer;
+	CStringArray* a = spViewer3D->GetLayersArray();
+	for (int i = 0; i < a->GetCount(); i++)
+	{
+		if (a->GetAt(i).Find(spViewer3D->GetDefLayer()) > -1)
+		{
+			sDefLayer = a->GetAt(i);
+			break;
+		}
+	}
+	if (p_mDLGBuildingVisiableSurveyWin == NULL)
+	{
+		AFX_MANAGE_STATE_EX;
+		
+		p_mDLGBuildingVisiableSurveyWin = new CDLGBuildingVisiableSurvey(sDefLayer);
+		p_mDLGBuildingVisiableSurveyWin->parent = (CObject*) this;
+		p_mDLGBuildingVisiableSurveyWin->Create(IDD_DIALOG5);
+	}
+	
+
+	p_mDLGBuildingVisiableSurveyWin->ShowWindow(SW_SHOW);
+
+
+	/*if (g_mHouseVisiableSurveyHandler == nullptr)
+	{
+	g_mHouseVisiableSurveyHandler = new houseVisiableSurveyHandler(p_mDLGHouseVisiableSurveyWin);
+	g_mHouseVisiableSurveyHandler->SetBuddy(m_val);
+	spViewer3D->getViewer()->addEventHandler( g_mHouseVisiableSurveyHandler );
+	}
+	*/
+
+	RECT r;
+	p_mDLGBuildingVisiableSurveyWin->GetWindowRect(&r);
+
+	int nWidth = r.right - r.left;
+	int nHeight = r.bottom - r.top;
+
+	r.left = spViewer3D->rectView3D.left + 20;
+	r.top = spViewer3D->rectView3D.top + 20;
+	r.right = r.left + nWidth;
+	r.bottom = r.top + nHeight;
+
+	p_mDLGBuildingVisiableSurveyWin->MoveWindow(&r);
+	bInSurvey = true;
+	bDeactive = false;
+	return true;
+}
+
+bool CBuildingVisiableSurvey::Deactivate()
+{
+	if (bDeactive)
+	{
+		return true;
+	}
+	bDeactive = true;
+	x3::Object<IViewer3D> spViewer3D(m_spBuddy);
+	if (p_mDLGBuildingVisiableSurveyWin)
+	{
+		p_mDLGBuildingVisiableSurveyWin->ShowWindow(SW_HIDE);
+	}
+
+	bInSurvey = false;
+	return true;
+}

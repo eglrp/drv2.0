@@ -398,6 +398,8 @@
     <ClInclude Include="CvvImage.h" />
     <ClInclude Include="DialogLoadShp.h" />
     <ClInclude Include="DlgAttInfoEx.h" />
+    <ClInclude Include="DLGBuildingVisiableSurvey.h" />
+    <ClInclude Include="DLGCreatorData.h" />
     <ClInclude Include="DLGHouseVisiableSurvey.h" />
     <ClInclude Include="DLGInternetInfo.h" />
     <ClInclude Include="DLGTab1.h" />
@@ -438,6 +440,8 @@
     <ClCompile Include="CvvImage.cpp" />
     <ClCompile Include="DialogLoadShp.cpp" />
     <ClCompile Include="DlgAttInfoEx.cpp" />
+    <ClCompile Include="DLGBuildingVisiableSurvey.cpp" />
+    <ClCompile Include="DLGCreatorData.cpp" />
     <ClCompile Include="DLGHouseVisiableSurvey.cpp" />
     <ClCompile Include="DLGInternetInfo.cpp" />
     <ClCompile Include="DLGTab1.cpp" />

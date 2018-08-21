@@ -8,6 +8,7 @@
 #include "osg/vec3d"
 #include "osg/LineWidth"
 #include "DLGHouseVisiableSurvey.h"
+#include "DLGBuildingVisiableSurvey.h"
 #include "IViewer3D.h"
 #include <map>
 using namespace std;
@@ -87,5 +88,39 @@ public:
 	bool bDeactive;
 	x3::IObject* m_val;
 	DLGHouseVisiableSurvey* p_mDLGHouseVisiableSurveyWin;
+	//houseVisiableSurveyHandler* p_mHouseVisiableSurveyHandler;
+};
+
+
+//建筑可视分析
+const char* const clsidBuildingVisiableSurvey = "00000000-3000-0000-0000-000000000004";
+class CBuildingVisiableSurvey : public IUICommon, public IUICommand, public IUITool
+{
+	X3BEGIN_CLASS_DECLARE(CBuildingVisiableSurvey, clsidBuildingVisiableSurvey)		
+		X3DEFINE_INTERFACE_ENTRY(IUICommon)		
+		X3DEFINE_INTERFACE_ENTRY(IUICommand)
+		X3DEFINE_INTERFACE_ENTRY(IUITool)
+		X3END_CLASS_DECLARE()
+
+public:
+	CBuildingVisiableSurvey(void);
+	~CBuildingVisiableSurvey(void);
+
+public:
+	// IUICommon
+	virtual bool Initialize();
+	virtual bool UnInitialize();
+	virtual bool SetBuddy(x3::IObject* val);
+
+	// IUICommand
+	virtual bool OnClick();
+	bool Checked();
+	virtual bool Activate();
+	virtual bool Deactivate();
+
+	bool bInSurvey;
+	bool bDeactive;
+	x3::IObject* m_val;
+	CDLGBuildingVisiableSurvey* p_mDLGBuildingVisiableSurveyWin;
 	//houseVisiableSurveyHandler* p_mHouseVisiableSurveyHandler;
 };

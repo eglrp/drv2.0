@@ -153,6 +153,12 @@
     <ClInclude Include="ThreadSafeUpdateCallback.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="DLGBuildingVisiableSurvey.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="DLGCreatorData.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -261,6 +267,12 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ThreadSafeUpdateCallback.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DLGBuildingVisiableSurvey.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="DLGCreatorData.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
