@@ -10,7 +10,7 @@ class CDLGCreatorData : public CDialogEx
 public:
 	CDLGCreatorData(CString sDefLayer,CWnd* pParent = NULL);   // standard constructor
 	virtual ~CDLGCreatorData();
-
+	CObject* parent;
 // Dialog Data
 	enum { IDD = IDD_DIALOG_CREATE_QUERY_DATA };
 	CString mBuildingLayer;

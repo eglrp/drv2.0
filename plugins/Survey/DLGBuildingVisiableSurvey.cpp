@@ -40,6 +40,7 @@ void CDLGBuildingVisiableSurvey::OnBnClickedOk()
 {
 	// TODO: Add your control notification handler code here
 	CDLGCreatorData dlg(mDefLayer);
+	dlg.parent = (CObject*)this;
 	dlg.DoModal();
 }
 

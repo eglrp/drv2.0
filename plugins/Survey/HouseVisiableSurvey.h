@@ -11,6 +11,7 @@
 #include "DLGBuildingVisiableSurvey.h"
 #include "IViewer3D.h"
 #include <map>
+#include <fstream>
 using namespace std;
 USING_NAMESPACE_EARTHMATRIX
 
@@ -91,6 +92,29 @@ public:
 	//houseVisiableSurveyHandler* p_mHouseVisiableSurveyHandler;
 };
 
+class Point3D 
+{
+public:
+	Point3D(double X = 0,double Y = 0,double Z = 0):x(X),y(Y),z(Z)
+	{
+
+	}
+	Point3D operator-(const Point3D &t) const  //重载减法
+	{
+		Point3D p;
+		p.x = x - t.x;
+		p.y = y - t.y;
+		p.z = z - t.z;
+		return p;
+	}
+	double length()
+	{
+		return sqrt( x*x + y*y + z*z );
+	}
+	double x;
+	double y;
+	double z;
+};
 
 //建筑可视分析
 const char* const clsidBuildingVisiableSurvey = "00000000-3000-0000-0000-000000000004";
@@ -121,6 +145,10 @@ public:
 	bool bInSurvey;
 	bool bDeactive;
 	x3::IObject* m_val;
+	bool createData(const char* infile,const char* vectorFile,double span);
 	CDLGBuildingVisiableSurvey* p_mDLGBuildingVisiableSurveyWin;
 	//houseVisiableSurveyHandler* p_mHouseVisiableSurveyHandler;
+
+	void insertPoint(std::vector<Point3D>& vecPoints,Point3D p1,Point3D p2,double span);
+	void testVisiable(std::vector<Point3D>& vecAllPts,const char* sBuildingVector,double span);
 };

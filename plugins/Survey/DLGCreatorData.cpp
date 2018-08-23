@@ -4,8 +4,8 @@
 #include "stdafx.h"
 #include "DLGCreatorData.h"
 #include "afxdialogex.h"
-
-
+#include "DLGBuildingVisiableSurvey.h"
+#include "HouseVisiableSurvey.h"
 // CDLGCreatorData dialog
 
 IMPLEMENT_DYNAMIC(CDLGCreatorData, CDialogEx)
@@ -68,11 +68,24 @@ void CDLGCreatorData::OnBnClickedButtonSelvector()
 
 void CDLGCreatorData::OnBnClickedOk()
 {
+	USES_CONVERSION;
 	// TODO: Add your control notification handler code here
 	UpdateData(TRUE);
 	if (mBuildingLayer.IsEmpty() || mSpan.IsEmpty() || mPathFile.IsEmpty())
 	{
 		AfxMessageBox(_T("参数不正确，请检查"));
 		return;
+	}
+	std::string sBuildLayer = W2A(mBuildingLayer);
+	std::string sSpan = W2A(mSpan);
+	std::string sPath = W2A(mPathFile);
+	CDLGBuildingVisiableSurvey* p = (CDLGBuildingVisiableSurvey*)parent;
+	if (p)
+	{
+		CBuildingVisiableSurvey* pp = (CBuildingVisiableSurvey*)(p->parent);
+		if (pp)
+		{
+			pp->createData(sPath.c_str(),sBuildLayer.c_str(),atof(sSpan.c_str()));
+		}
 	}
 }

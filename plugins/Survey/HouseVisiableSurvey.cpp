@@ -11,7 +11,7 @@
 #include "osg/LineWidth"
 #include <osgEarthSymbology/Geometry>
 #include "ThreadSafeUpdateCallback.h"
-
+#include <vector>
 osg::ref_ptr<houseVisiableSurveyHandler> g_mHouseVisiableSurveyHandler = nullptr;
 
 houseVisiableSurveyHandler::houseVisiableSurveyHandler(DLGHouseVisiableSurvey* pWin)
@@ -724,4 +724,163 @@ bool CBuildingVisiableSurvey::Deactivate()
 
 	bInSurvey = false;
 	return true;
+}
+
+bool CBuildingVisiableSurvey::createData(const char* infile,const char* vectorFile,double span)
+{
+	std::ifstream fin(infile, std::ios::in);
+	char line[1024]={0};
+	std::string x = "";
+	std::string y = "";
+	std::string z = "";
+	std::vector<Point3D> vecPathPt;
+	while(fin.getline(line, sizeof(line)))
+	{
+		std::stringstream word(line);
+		word >> x;
+		word >> y;
+		word >> z;
+		vecPathPt.push_back(Point3D(atof(x.c_str()),atof(y.c_str()),atof(z.c_str())));
+	}
+	if (vecPathPt.empty())
+	{
+		return false;
+	}
+	std::vector<Point3D> vecAllPts;
+	for (int i = 0;i<vecPathPt.size() -1;++i)
+	{
+		insertPoint(vecAllPts,vecPathPt[i],vecPathPt[i+1],span);
+	}
+	if (vecAllPts.size()>0)
+	{
+		testVisiable(vecAllPts,vectorFile,span);
+	}
+	return true;
+}
+
+void CBuildingVisiableSurvey::insertPoint(std::vector<Point3D>& vecPoints,Point3D p1,Point3D p2,double span)
+{
+	double vx = p2.x - p1.x;
+	double vy = p2.y - p1.y;
+	double vz = p2.z - p1.z;
+	//单位化
+	double mo = sqrt(vx*vx + vy*vy +vz*vz);
+	vx /= mo;
+	vy /= mo;
+	vz /= mo;
+	vecPoints.push_back(p1);
+	p1.x += vx*span;
+	p1.y += vy*span;
+	p1.z += vz*span;
+	while ((p1 - p2).length()>span)
+	{
+		vecPoints.push_back(p1);
+		p1.x += vx*span;
+		p1.y += vy*span;
+		p1.z += vz*span;
+	}
+}
+
+#include "xml/rapidxml.hpp"
+#include "xml/rapidxml_utils.hpp"
+#include "xml/rapidxml_print.hpp"
+#include "xml/rapidxml_iterators.hpp"
+
+void CBuildingVisiableSurvey::testVisiable(std::vector<Point3D>& vecAllPts,const char* sBuildingVector,double span)
+{
+	USES_CONVERSION;
+	x3::Object<IViewer3D> spViewer3D(m_spBuddy);
+	osgEarth::Drivers::OGRFeatureOptions ogrOpt;
+	ogrOpt.url() = std::string(sBuildingVector);
+	ogrOpt.openWrite() = true;
+
+	rapidxml::xml_document<> doc;
+	rapidxml::xml_node<>* root = doc.allocate_node(rapidxml::node_pi, doc.allocate_string("xml version='1.0' encoding='utf-8'"));
+	doc.append_node(root);
+	rapidxml::xml_node<>* dataNode = doc.allocate_node(rapidxml::node_element, "data", "Information");
+	doc.append_node(dataNode);
+	for (int i = 0;i<vecAllPts.size();++i)
+	{
+		osg::Vec3d vi(vecAllPts[i].x,vecAllPts[i].y,vecAllPts[i].z);
+		CString sInfo;
+		sInfo.Format(_T("P+%.2f"),i*span);
+		rapidxml::xml_node<>* observeNode = doc.allocate_node(rapidxml::node_element, "ObservePos", NULL);
+		dataNode->append_node(observeNode);
+		observeNode->append_node(doc.allocate_node(rapidxml::node_element,"NAME",W2A(sInfo)));
+		sInfo.Format(_T("%f"),vi.x());
+		observeNode->append_node(doc.allocate_node(rapidxml::node_element,"X",W2A(sInfo)));
+		sInfo.Format(_T("%f"),vi.y());
+		observeNode->append_node(doc.allocate_node(rapidxml::node_element,"Y",W2A(sInfo)));
+		sInfo.Format(_T("%f"),vi.z());
+		observeNode->append_node(doc.allocate_node(rapidxml::node_element,"Z",W2A(sInfo)));
+		
+		osg::ref_ptr<osgEarth::Features::FeatureSource> features = osgEarth::Features::FeatureSourceFactory::create(ogrOpt);
+		features->initialize();
+
+		osg::ref_ptr<osgEarth::Features::FeatureCursor> cursor = features->createFeatureCursor();
+
+		double disMin = 99999;
+		osgEarth::Features::Feature* mfeature;
+		osgEarth::Features::Feature* feature;
+		
+
+		while(cursor->hasMore())
+		{
+			//输出feature中的信息
+			feature = cursor->nextFeature();
+			osgEarth::Symbology::GeometryIterator parts (feature->getGeometry(), false);
+			std::string sname = feature->getName();
+			sname = feature->className();
+			std::string sname1 = feature->getString("AcDbEntity");
+			//AttributeTable att =  feature->getAttrs();
+			std::string sGC = feature->getString("高程");
+			std::string sDG = feature->getString("底高");
+			std::string sDG2 = feature->getString("顶高");
+			std::string sDH = feature->getString("栋号");
+			if (sDH.empty()/*||sDG.empty()||sGC.empty()*/)
+			{
+				continue;;
+			}
+
+			double gc = atof(sGC.c_str());
+			double dg = atof(sDG.c_str());
+			double dg2 = atof(sDG2.c_str());
+			rapidxml::xml_node<>* layers = doc.allocate_node(rapidxml::node_element, "building", W2A(CString(sDH.c_str())));
+			observeNode->append_node(layers);
+
+			while(parts.hasMore())
+			{
+				osgEarth::Symbology::Geometry* part = parts.next();
+				osg::ref_ptr<osg::Vec3Array> allPoints = new osg::Vec3Array;
+
+				allPoints = part->toVec3Array();
+				int kk = allPoints->size();
+				Vec3dVector* vv = new Vec3dVector();
+				osg::ref_ptr< osg::Vec3Array > v3 = new osg::Vec3Array;
+
+
+				if(allPoints->size()<2)
+					continue;
+
+				for( osg::Vec3Array::iterator i = allPoints->begin(); i != allPoints->end(); ++i )
+				{
+					osg::Vec3d v(*i);
+					v.z() = (dg + dg2)/2+ gc;
+					bool b = testIntersect(m_spViewer3D->getRootNode()->asGroup(),vi,v,vecIntersect);
+					if (vecIntersect.size()<1)
+					{
+						bVisiable = true;
+						std::vector<osg::Vec3d> vec;
+						vec.push_back(v);
+						vec.push_back(vi);
+						vecLineInsect.push_back(vec);
+						break;
+					}
+				}
+			}
+		}
+	}
+	
+	std::ofstream out("d:\\hu.xml");
+	out << doc;
 }
