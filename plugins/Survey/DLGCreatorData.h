@@ -1,5 +1,6 @@
 #pragma once
 #include "resource.h"
+#include "afxcmn.h"
 
 // CDLGCreatorData dialog
 
@@ -24,4 +25,11 @@ public:
 	afx_msg void OnBnClickedButtonSelpath();
 	afx_msg void OnBnClickedButtonSelvector();
 	afx_msg void OnBnClickedOk();
+	CProgressCtrl mProgress;
+
+	void finish()
+	{
+		AfxMessageBox(_T("Íê³É"));
+		OnClose();
+	}
 };

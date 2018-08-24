@@ -884,7 +884,7 @@ void CDataManager::OnDellayer()
 		{
 			return;
 		}
-		if (pNode->getName() == "线框" || pNode->getName().find("兴趣点(")!=-1)
+		if (pNode->getName().find(".")==-1)
 		{
 			MessageBox(_T("不允许删除该项！"));
 			return;

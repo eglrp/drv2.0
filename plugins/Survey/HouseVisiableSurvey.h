@@ -12,6 +12,7 @@
 #include "IViewer3D.h"
 #include <map>
 #include <fstream>
+
 using namespace std;
 USING_NAMESPACE_EARTHMATRIX
 
@@ -99,6 +100,11 @@ public:
 	{
 
 	}
+	void operator=(Point3D& a){
+		x = a.x;
+		y = a.y;
+		z = a.z;
+	}
 	Point3D operator-(const Point3D &t) const  //重载减法
 	{
 		Point3D p;
@@ -116,6 +122,8 @@ public:
 	double z;
 };
 
+
+void startCreateData(void* lpVoid);
 //建筑可视分析
 const char* const clsidBuildingVisiableSurvey = "00000000-3000-0000-0000-000000000004";
 class CBuildingVisiableSurvey : public IUICommon, public IUICommand, public IUITool
@@ -147,8 +155,41 @@ public:
 	x3::IObject* m_val;
 	bool createData(const char* infile,const char* vectorFile,double span);
 	CDLGBuildingVisiableSurvey* p_mDLGBuildingVisiableSurveyWin;
+	
 	//houseVisiableSurveyHandler* p_mHouseVisiableSurveyHandler;
-
+	bool testIntersect(osg::Group* group,osg::Vec3d p1,osg::Vec3d p2,std::vector<osg::Vec3d>& vecIntersect);
 	void insertPoint(std::vector<Point3D>& vecPoints,Point3D p1,Point3D p2,double span);
-	void testVisiable(std::vector<Point3D>& vecAllPts,const char* sBuildingVector,double span);
+	void testBuildingVisiable(osg::Group* Root,std::vector<Point3D>& vecAllPts,const char* sBuildingVector,double span,CDLGBuildingVisiableSurvey* pWin);
+	//void testVisiable(osg::Group* root,std::vector<Point3D>& vecAllPts,const char* sBuildingVector,double span);
+
+public:
+	
+	std::vector<Point3D> mvecAllPts;
+	double mSpan;
+	std::string mBuildingVectorFile;
+	osg::Group* mRoot;
+};
+
+class buildingVisiableSurveyHandler : public osgGA::GUIEventHandler
+{
+public:
+	buildingVisiableSurveyHandler(CDLGBuildingVisiableSurvey* pWin);
+	~buildingVisiableSurveyHandler(){};
+	bool handle( const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa );
+	bool SetBuddy(x3::IObject* val);
+	void getPos(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Vec3d& pos);
+	void drawOdservePt(osg::Vec3d p);
+	void reDrawObservePts(std::vector<osg::Vec3d>& vec);
+	void drawLine(osg::Vec3d p1,osg::Vec3d p2);
+	void reDrawLines(osg::Vec3d p,std::vector<osg::Vec3d>& vecP,std::vector<osg::Vec3d>& vecObservePt);
+	CDLGBuildingVisiableSurvey* m_pDLGBuildingVisiableSurveyWin;
+	osg::ref_ptr<osg::Group> gTemp;
+	x3::Object<IViewer3D> m_spViewer3D;
+	
+	CString m_sDefLayer;
+protected:
+	bool _mouseDown;
+	float _mouseDownX,_mouseDownY;//鼠标点击的屏幕坐标
+	osg::Vec3d firstPt;//鼠标点击的场景坐标
+	
 };

@@ -27,6 +27,7 @@ void CDLGCreatorData::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_EDIT_BUILDING, mBuildingLayer);
 	DDX_Text(pDX, IDC_EDIT_PATH, mPathFile);
 	DDX_Text(pDX, IDC_EDIT_SPAN, mSpan);
+	DDX_Control(pDX, IDC_PROGRESS_CREATEDATA, mProgress);
 }
 
 
@@ -85,7 +86,11 @@ void CDLGCreatorData::OnBnClickedOk()
 		CBuildingVisiableSurvey* pp = (CBuildingVisiableSurvey*)(p->parent);
 		if (pp)
 		{
-			pp->createData(sPath.c_str(),sBuildLayer.c_str(),atof(sSpan.c_str()));
+			if(pp->createData(sPath.c_str(),sBuildLayer.c_str(),atof(sSpan.c_str())))
+			{
+				/*AfxMessageBox(_T("创建完成！"));
+				OnOK();*/
+			}
 		}
 	}
 }
