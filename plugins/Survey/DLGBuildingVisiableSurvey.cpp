@@ -90,14 +90,15 @@ void CDLGBuildingVisiableSurvey::OnBnClickedButtonLoadxml()
 		mXmlFile = dlg.GetPathName();
 	}
 	
-	rapidxml::file<> fdoc(W2A(mXmlFile));
-
+	//清空
 	mComQueryObj.ResetContent();
 	mComQueryType.SetCurSel(0);
-
 	m_vecAllObservePt.clear();
 	m_vecAllBuilding.clear();
 	mVecObservePt.clear();
+
+	//获取xml数据
+	rapidxml::file<> fdoc(W2A(mXmlFile));
 	rapidxml::xml_document<> doc;
 	doc.parse<0>(fdoc.data());
 	//! 获取根节点
@@ -131,16 +132,19 @@ void CDLGBuildingVisiableSurvey::OnBnClickedButtonLoadxml()
 			nameNode = nameNode->next_sibling();
 		}
 	}
-	OnCbnSelchangeComboQueryType();
-	mComQueryObj.SetCurSel(0);
+
+	//填充及绘制
+	OnCbnSelchangeComboQueryType();//填充combox控件
+	mComQueryObj.SetCurSel(0);//选中第一项
 	if (g_mBuildingVisiableSurveyHandler && !mVecObservePt.empty())
 	{
-		g_mBuildingVisiableSurveyHandler->reDrawObservePts(mVecObservePt);
+		g_mBuildingVisiableSurveyHandler->reDrawObservePts(mVecObservePt);//绘制观察点
 	}
-	mbNoXml = true;
+
+	mbNoXml = true;//默认xml文件存在时初始化不弹出文件选择框
 }
 
-
+//切换查询类型时 更新查询对象combox
 void CDLGBuildingVisiableSurvey::OnCbnSelchangeComboQueryType()
 {
 	// TODO: Add your control notification handler code here
@@ -167,7 +171,7 @@ void CDLGBuildingVisiableSurvey::OnCbnSelchangeComboQueryType()
 	}
 }
 
-
+//开始查询
 void CDLGBuildingVisiableSurvey::OnBnClickedButtonDosearch()
 {
 	// TODO: Add your control notification handler code here
@@ -186,7 +190,7 @@ void CDLGBuildingVisiableSurvey::OnBnClickedButtonDosearch()
 	{
 		doSearch(sObj,mXmlFile,1);
 	}
-
+	//绘制查询结果
 	if (g_mBuildingVisiableSurveyHandler)
 	{
 		g_mBuildingVisiableSurveyHandler->reDrawLines(mPtToMultiPt.pt,mPtToMultiPt.vecMultiPt,mVecObservePt);
@@ -292,7 +296,9 @@ BOOL CDLGBuildingVisiableSurvey::OnInitDialog()
 	CDialogEx::OnInitDialog();
 	USES_CONVERSION;
 	// TODO:  Add extra initialization here
+	//初始化列表控件
 	mWndList.InsertColumn (0, _T("字段名"), LVCFMT_LEFT, 200);
+	//根据默认图层检测对应xml数据文件
 	std::string xmlFile = W2A(mDefLayer);
 	xmlFile = xmlFile.substr(0,xmlFile.size() - 3) + "xml";
 	if( (_access( xmlFile.c_str(), 0 )) != -1 )

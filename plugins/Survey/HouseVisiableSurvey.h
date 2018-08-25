@@ -122,8 +122,9 @@ public:
 	double z;
 };
 
-
+//线程函数
 void startCreateData(void* lpVoid);
+
 //建筑可视分析
 const char* const clsidBuildingVisiableSurvey = "00000000-3000-0000-0000-000000000004";
 class CBuildingVisiableSurvey : public IUICommon, public IUICommand, public IUITool
@@ -150,26 +151,31 @@ public:
 	virtual bool Activate();
 	virtual bool Deactivate();
 
-	bool bInSurvey;
+public:
 	bool bDeactive;
+	bool bInSurvey;
 	x3::IObject* m_val;
-	bool createData(const char* infile,const char* vectorFile,double span);
 	CDLGBuildingVisiableSurvey* p_mDLGBuildingVisiableSurveyWin;
-	
-	//houseVisiableSurveyHandler* p_mHouseVisiableSurveyHandler;
-	bool testIntersect(osg::Group* group,osg::Vec3d p1,osg::Vec3d p2,std::vector<osg::Vec3d>& vecIntersect);
-	void insertPoint(std::vector<Point3D>& vecPoints,Point3D p1,Point3D p2,double span);
-	void testBuildingVisiable(osg::Group* Root,std::vector<Point3D>& vecAllPts,const char* sBuildingVector,double span,CDLGBuildingVisiableSurvey* pWin);
-	//void testVisiable(osg::Group* root,std::vector<Point3D>& vecAllPts,const char* sBuildingVector,double span);
 
 public:
+	//创建xml数据
+	bool createData(const char* infile,const char* vectorFile,double span);
+	//两点通视检测
+	bool testIntersect(osg::Group* group,osg::Vec3d p1,osg::Vec3d p2,std::vector<osg::Vec3d>& vecIntersect);
+	//两点间按指定间隔插点 返回最后一个插入点与最后一个点的距离
+	double insertPoint(std::vector<osg::Vec3d>& vecPoints,osg::Vec3d p1,osg::Vec3d p2,double span);
+	//观察点通视分析
+	void testBuildingVisiable(osg::Group* Root,std::vector<osg::Vec3d>& vecAllPts,const char* sBuildingVector,double span,CDLGBuildingVisiableSurvey* pWin);
 	
-	std::vector<Point3D> mvecAllPts;
-	double mSpan;
-	std::string mBuildingVectorFile;
+public:
+	//通视分析参数
 	osg::Group* mRoot;
+	double mSpan;
+	std::vector<osg::Vec3d> mvecAllPts;
+	std::string mBuildingVectorFile;
 };
 
+//建筑通视分析事件handler
 class buildingVisiableSurveyHandler : public osgGA::GUIEventHandler
 {
 public:
@@ -178,18 +184,24 @@ public:
 	bool handle( const osgGA::GUIEventAdapter &ea, osgGA::GUIActionAdapter &aa );
 	bool SetBuddy(x3::IObject* val);
 	void getPos(const osgGA::GUIEventAdapter& ea, osgGA::GUIActionAdapter& aa, osg::Vec3d& pos);
-	void drawOdservePt(osg::Vec3d p);
+	//绘制观察点
+	void drawObservePt(osg::Vec3d p);
+	//重新绘制观察点
 	void reDrawObservePts(std::vector<osg::Vec3d>& vec);
+	//绘制直线
 	void drawLine(osg::Vec3d p1,osg::Vec3d p2);
+	//重新绘制（观察点和观察线）
 	void reDrawLines(osg::Vec3d p,std::vector<osg::Vec3d>& vecP,std::vector<osg::Vec3d>& vecObservePt);
 	CDLGBuildingVisiableSurvey* m_pDLGBuildingVisiableSurveyWin;
+	
+public:
+	//用于绘制的节点
 	osg::ref_ptr<osg::Group> gTemp;
 	x3::Object<IViewer3D> m_spViewer3D;
-	
+	//默认矢量
 	CString m_sDefLayer;
+
 protected:
 	bool _mouseDown;
 	float _mouseDownX,_mouseDownY;//鼠标点击的屏幕坐标
-	osg::Vec3d firstPt;//鼠标点击的场景坐标
-	
 };

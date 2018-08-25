@@ -30,17 +30,13 @@ void CDLGCreatorData::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_PROGRESS_CREATEDATA, mProgress);
 }
 
-
 BEGIN_MESSAGE_MAP(CDLGCreatorData, CDialogEx)
 	ON_BN_CLICKED(IDC_BUTTON_SELPATH, &CDLGCreatorData::OnBnClickedButtonSelpath)
 	ON_BN_CLICKED(IDC_BUTTON_SELVECTOR, &CDLGCreatorData::OnBnClickedButtonSelvector)
 	ON_BN_CLICKED(IDOK, &CDLGCreatorData::OnBnClickedOk)
 END_MESSAGE_MAP()
 
-
 // CDLGCreatorData message handlers
-
-
 void CDLGCreatorData::OnBnClickedButtonSelpath()
 {
 	// TODO: Add your control notification handler code here
@@ -53,7 +49,6 @@ void CDLGCreatorData::OnBnClickedButtonSelpath()
 	UpdateData(FALSE);
 }
 
-
 void CDLGCreatorData::OnBnClickedButtonSelvector()
 {
 	// TODO: Add your control notification handler code here
@@ -65,7 +60,6 @@ void CDLGCreatorData::OnBnClickedButtonSelvector()
 	mBuildingLayer = dlg.GetPathName();
 	UpdateData(FALSE);
 }
-
 
 void CDLGCreatorData::OnBnClickedOk()
 {
@@ -86,11 +80,7 @@ void CDLGCreatorData::OnBnClickedOk()
 		CBuildingVisiableSurvey* pp = (CBuildingVisiableSurvey*)(p->parent);
 		if (pp)
 		{
-			if(pp->createData(sPath.c_str(),sBuildLayer.c_str(),atof(sSpan.c_str())))
-			{
-				/*AfxMessageBox(_T("创建完成！"));
-				OnOK();*/
-			}
+			pp->createData(sPath.c_str(),sBuildLayer.c_str(),atof(sSpan.c_str()));
 		}
 	}
 }

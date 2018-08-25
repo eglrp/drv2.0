@@ -12,9 +12,19 @@
 #include <osgEarthSymbology/Geometry>
 #include "ThreadSafeUpdateCallback.h"
 #include <vector>
+#include "xml/rapidxml.hpp"
+#include "xml/rapidxml_utils.hpp"
+#include "xml/rapidxml_print.hpp"
+#include "xml/rapidxml_iterators.hpp"
 
 osg::ref_ptr<houseVisiableSurveyHandler> g_mHouseVisiableSurveyHandler = nullptr;
 osg::ref_ptr<buildingVisiableSurveyHandler> g_mBuildingVisiableSurveyHandler = nullptr;
+
+void startCreateData(void* lpVoid)
+{
+	CBuildingVisiableSurvey* param = (CBuildingVisiableSurvey*)lpVoid;
+	param->testBuildingVisiable(param->mRoot,param->mvecAllPts,param->mBuildingVectorFile.c_str(),param->mSpan,param->p_mDLGBuildingVisiableSurveyWin);
+}
 
 houseVisiableSurveyHandler::houseVisiableSurveyHandler(DLGHouseVisiableSurvey* pWin)
 {
@@ -120,7 +130,6 @@ void houseVisiableSurveyHandler::getVisiableBuilding(osg::Vec3d vi)
 	osg::ref_ptr<osgEarth::Features::FeatureCursor> cursor = features->createFeatureCursor();
 
 	double disMin = 99999;
-	osgEarth::Features::Feature* mfeature;
 	osgEarth::Features::Feature* feature;
 	std::vector<std::vector<osg::Vec3d> > vecLineInsect;
 	m_pDLGHouseVisiableSurveyWin->UpdateData(TRUE);
@@ -734,8 +743,6 @@ bool CBuildingVisiableSurvey::Deactivate()
 	return true;
 }
 
-
-
 bool CBuildingVisiableSurvey::createData(const char* infile,const char* vectorFile,double span)
 {
 	std::ifstream fin(infile, std::ios::in);
@@ -743,23 +750,32 @@ bool CBuildingVisiableSurvey::createData(const char* infile,const char* vectorFi
 	std::string x = "";
 	std::string y = "";
 	std::string z = "";
-	std::vector<Point3D> vecPathPt;
+	std::vector<osg::Vec3d> vecPathPt;
 	while(fin.getline(line, sizeof(line)))
 	{
 		std::stringstream word(line);
 		word >> x;
 		word >> y;
 		word >> z;
-		vecPathPt.push_back(Point3D(atof(x.c_str()),atof(y.c_str()),atof(z.c_str())));
+		vecPathPt.push_back(osg::Vec3d(atof(x.c_str()),atof(y.c_str()),atof(z.c_str())));
 	}
 	if (vecPathPt.empty())
 	{
 		return false;
 	}
 	mvecAllPts.clear();
-	for (int i = 0;i<vecPathPt.size() -1;++i)
+	if (span<=0)
 	{
-		insertPoint(mvecAllPts,vecPathPt[i],vecPathPt[i+1],span);
+		mvecAllPts.assign(vecPathPt.begin(),vecPathPt.end());
+	}
+	else
+	{
+		for (int i = 0;i<vecPathPt.size() - 1;++i)
+		{
+			double d = insertPoint(mvecAllPts,vecPathPt[i],vecPathPt[i+1],span);
+			mvecAllPts.push_back(osg::Vec3d(d,0,0));
+			mvecAllPts.push_back(vecPathPt[i+1]);
+		}
 	}
 	if (mvecAllPts.size()>0)
 	{
@@ -768,38 +784,42 @@ bool CBuildingVisiableSurvey::createData(const char* infile,const char* vectorFi
 		mSpan = span;
 		mBuildingVectorFile = std::string(vectorFile);
 		_beginthread(&startCreateData, 0, this);
-		//testBuildingVisiable(spViewer3D->getRootNode()->asGroup(),vecAllPts,vectorFile,span,p_mDLGBuildingVisiableSurveyWin);
 	}
 	return true;
 }
 
-void CBuildingVisiableSurvey::insertPoint(std::vector<Point3D>& vecPoints,Point3D p1,Point3D p2,double span)
+double CBuildingVisiableSurvey::insertPoint(std::vector<osg::Vec3d>& vecPoints,osg::Vec3d p1,osg::Vec3d p2,double span)
 {
-	double vx = p2.x - p1.x;
-	double vy = p2.y - p1.y;
-	double vz = p2.z - p1.z;
+	osg::Vec3d p = p1;
+	double vx = p2.x() - p1.x();
+	double vy = p2.y() - p1.y();
+	double vz = p2.z() - p1.z();
 	//单位化
 	double mo = sqrt(vx*vx + vy*vy +vz*vz);
 	vx /= mo;
 	vy /= mo;
 	vz /= mo;
 	vecPoints.push_back(p1);
-	p1.x += vx*span;
-	p1.y += vy*span;
-	p1.z += vz*span;
+	p1.x() += vx*span;
+	p1.y() += vy*span;
+	p1.z() += vz*span;
 	while ((p1 - p2).length()>span)
 	{
 		vecPoints.push_back(p1);
-		p1.x += vx*span;
-		p1.y += vy*span;
-		p1.z += vz*span;
+		p1.x() += vx*span;
+		p1.y() += vy*span;
+		p1.z() += vz*span;
+	}
+	if ((p1 - p).length() < (p2 - p).length())
+	{
+		vecPoints.push_back(p1);
+		return (p1 - p2).length();
+	}
+	else
+	{
+		return span - (p1 - p2).length();
 	}
 }
-
-#include "xml/rapidxml.hpp"
-#include "xml/rapidxml_utils.hpp"
-#include "xml/rapidxml_print.hpp"
-#include "xml/rapidxml_iterators.hpp"
 
 bool CBuildingVisiableSurvey::testIntersect(osg::Group* group,osg::Vec3d p1,osg::Vec3d p2,std::vector<osg::Vec3d>& vecIntersect)
 {
@@ -813,7 +833,6 @@ bool CBuildingVisiableSurvey::testIntersect(osg::Group* group,osg::Vec3d p1,osg:
 	group->accept(iv);
 	if (ls.valid() && ls->containsIntersections())
 	{
-		
 		for (osgUtil::LineSegmentIntersector::Intersections::iterator hitr = ls->getIntersections().begin();
 			hitr != ls->getIntersections().end();++hitr)
 		{
@@ -828,7 +847,7 @@ bool CBuildingVisiableSurvey::testIntersect(osg::Group* group,osg::Vec3d p1,osg:
 	return bIntersect;
 }
 
-void CBuildingVisiableSurvey::testBuildingVisiable(osg::Group* Root,std::vector<Point3D>& vecAllPts,const char* sBuildingVector,double span,CDLGBuildingVisiableSurvey* pWin)
+void CBuildingVisiableSurvey::testBuildingVisiable(osg::Group* Root,std::vector<osg::Vec3d>& vecAllPts,const char* sBuildingVector,double span,CDLGBuildingVisiableSurvey* pWin)
 {
 	USES_CONVERSION;
 	osgEarth::Drivers::OGRFeatureOptions ogrOpt;
@@ -845,11 +864,21 @@ void CBuildingVisiableSurvey::testBuildingVisiable(osg::Group* Root,std::vector<
 	bool bExtracAllBuilding = true;
 	pWin->p_mDLGDataCreator->mProgress.SetRange(0,vecAllPts.size());
 	pWin->p_mDLGDataCreator->mProgress.SetPos(0);
+	double disOff = 0;
+	int lastIdx = 0;
 	for (int i = 0;i<vecAllPts.size();++i)
 	{
-		osg::Vec3d vi(vecAllPts[i].x,vecAllPts[i].y,vecAllPts[i].z);
+		osg::Vec3d vi = vecAllPts[i];
 		CString sInfo;
-		sInfo.Format(_T("P+%.2f"),i*span);
+		int numKeyPt = 0;
+		if (vecAllPts[i].y() == 0 && vecAllPts[i].z() == 0)
+		{
+			disOff += (span - vecAllPts[i].x());
+			++i;
+			++numKeyPt;
+			vi = vecAllPts[i];
+		}
+		sInfo.Format(_T("P+%.2f"),(i-numKeyPt)*span - disOff);
 		rapidxml::xml_node<>* observeNode = doc.allocate_node(rapidxml::node_element, "ObservePos", NULL);
 		dataNode->append_node(observeNode);
 		observeNode->append_node(doc.allocate_node(rapidxml::node_element,"NAME",W2A(sInfo)));
@@ -866,10 +895,7 @@ void CBuildingVisiableSurvey::testBuildingVisiable(osg::Group* Root,std::vector<
 		osg::ref_ptr<osgEarth::Features::FeatureCursor> cursor = features->createFeatureCursor();
 
 		double disMin = 99999;
-		osgEarth::Features::Feature* mfeature;
 		osgEarth::Features::Feature* feature;
-		
-
 		while(cursor->hasMore())
 		{
 			//输出feature中的信息
@@ -906,11 +932,8 @@ void CBuildingVisiableSurvey::testBuildingVisiable(osg::Group* Root,std::vector<
 				int kk = allPoints->size();
 				Vec3dVector* vv = new Vec3dVector();
 				osg::ref_ptr< osg::Vec3Array > v3 = new osg::Vec3Array;
-
-
 				if(allPoints->size()<2)
 					continue;
-
 				for( osg::Vec3Array::iterator i = allPoints->begin(); i != allPoints->end(); ++i )
 				{
 					osg::Vec3d v(*i);
@@ -943,14 +966,6 @@ void CBuildingVisiableSurvey::testBuildingVisiable(osg::Group* Root,std::vector<
 	pWin->p_mDLGDataCreator->finish();
 }
 
-void startCreateData(void* lpVoid)
-{
-	CBuildingVisiableSurvey* param = (CBuildingVisiableSurvey*)lpVoid;
-	param->testBuildingVisiable(param->mRoot,param->mvecAllPts,param->mBuildingVectorFile.c_str(),param->mSpan,param->p_mDLGBuildingVisiableSurveyWin);
-}
-
-
-
 buildingVisiableSurveyHandler::buildingVisiableSurveyHandler(CDLGBuildingVisiableSurvey* pWin)
 {
 	gTemp = nullptr;
@@ -961,15 +976,15 @@ buildingVisiableSurveyHandler::buildingVisiableSurveyHandler(CDLGBuildingVisiabl
 bool buildingVisiableSurveyHandler::SetBuddy(x3::IObject* val)
 {
 	m_spViewer3D = (IViewer3D*)val;
-
 	m_sDefLayer = m_spViewer3D->GetDefLayer();
+	//初始化绘制观察点
 	if (m_pDLGBuildingVisiableSurveyWin->mVecObservePt.size()>0)
 	{
 		gTemp = new osg::Group;
 		gTemp->addUpdateCallback(new CThreadSafeUpdateCallback);
 		for (int i = 0;i<m_pDLGBuildingVisiableSurveyWin->mVecObservePt.size();++i)
 		{
-			drawOdservePt(m_pDLGBuildingVisiableSurveyWin->mVecObservePt[i]);
+			drawObservePt(m_pDLGBuildingVisiableSurveyWin->mVecObservePt[i]);
 		}
 		gTemp->setName("观察点");
 		m_spViewer3D->AddNode(gTemp);
@@ -995,7 +1010,6 @@ void buildingVisiableSurveyHandler::getPos(const osgGA::GUIEventAdapter& ea, osg
 		= intersection.begin();
 	if (iter != intersection.end())
 	{
-
 		pos.x() = iter->getWorldIntersectPoint().x();
 		pos.y() = iter->getWorldIntersectPoint().y();
 		pos.z() = iter->getWorldIntersectPoint().z();
@@ -1031,7 +1045,6 @@ bool buildingVisiableSurveyHandler::handle( const osgGA::GUIEventAdapter &ea, os
 			getPos(ea, aa, vecPos);
 			if (vecPos.length() >0.1)
 			{	
-				
 				return true;
 			}
 		}
@@ -1039,11 +1052,11 @@ bool buildingVisiableSurveyHandler::handle( const osgGA::GUIEventAdapter &ea, os
 	return false;
 }
 
-void buildingVisiableSurveyHandler::drawOdservePt(osg::Vec3d p)
+void buildingVisiableSurveyHandler::drawObservePt(osg::Vec3d p)
 {
 	double x = p.x(),y = p.y(),z = p.z();
-	double radiu = 0.5;
-	osg::Vec4 color(1,1,0,1);
+	double radiu = 1;
+	osg::Vec4 color(1,0,0,1);
 	std::vector<osg::Vec3d> vecCoords;
 	
 	osg::ref_ptr<osg::Geode> _geode = new osg::Geode();
@@ -1070,23 +1083,21 @@ void buildingVisiableSurveyHandler::drawOdservePt(osg::Vec3d p)
 	osg::ref_ptr<CThreadSafeUpdateCallback> spCallback = dynamic_cast<CThreadSafeUpdateCallback*>(gTemp->getUpdateCallback());
 	if( spCallback != NULL )
 		spCallback->AddChild(gTemp, _geode);
-
 }
 
 void buildingVisiableSurveyHandler::reDrawObservePts(std::vector<osg::Vec3d>& vec)
 {
+	//清空渲染节点
 	if (gTemp != nullptr)
 	{
 		m_spViewer3D->RemoveNode(gTemp);
 		gTemp = nullptr;
 	}
-	
-	
 	gTemp = new osg::Group;
 	gTemp->addUpdateCallback(new CThreadSafeUpdateCallback);
 	for (int i = 0;i<vec.size();++i)
 	{
-		drawOdservePt(vec[i]);
+		drawObservePt(vec[i]);
 	}
 	gTemp->setName("观察点");
 	m_spViewer3D->AddNode(gTemp);
@@ -1120,17 +1131,17 @@ void buildingVisiableSurveyHandler::drawLine(osg::Vec3d p1,osg::Vec3d p2)
 
 void buildingVisiableSurveyHandler::reDrawLines(osg::Vec3d p,std::vector<osg::Vec3d>& vecP,std::vector<osg::Vec3d>& vecObservePt)
 {
+	//清空渲染节点
 	if (gTemp != nullptr)
 	{
 		m_spViewer3D->RemoveNode(gTemp);
 		gTemp = nullptr;
 	}
-
 	gTemp = new osg::Group;
 	gTemp->addUpdateCallback(new CThreadSafeUpdateCallback);
 	for (int i = 0;i<vecObservePt.size();++i)
 	{
-		drawOdservePt(vecObservePt[i]);
+		drawObservePt(vecObservePt[i]);
 	}
 	for (int i = 0;i<vecP.size();++i)
 	{
