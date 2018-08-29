@@ -20,6 +20,7 @@ CDLGBuildingVisiableSurvey::CDLGBuildingVisiableSurvey(CString sDefLayer,CWnd* p
 	:mDefLayer(sDefLayer), 
 	mXmlFile(_T("")),
 	mbNoXml(1),
+	isBusy(false),
 	CDialogEx(CDLGBuildingVisiableSurvey::IDD, pParent)
 {
 	mVecObservePt.clear();
@@ -36,6 +37,7 @@ void CDLGBuildingVisiableSurvey::DoDataExchange(CDataExchange* pDX)
 	DDX_Control(pDX, IDC_COMBO_QUERY_TYPE, mComQueryType);
 	DDX_Control(pDX, IDC_COMBO_QUERY_OBJECT, mComQueryObj);
 	DDX_Control(pDX, IDC_LIST_QUERY_BUILDING_RES, mWndList);
+	DDX_Control(pDX, IDC_LIST_QUERY_ITEM, mWndList_item);
 }
 
 
@@ -45,6 +47,7 @@ BEGIN_MESSAGE_MAP(CDLGBuildingVisiableSurvey, CDialogEx)
 	ON_BN_CLICKED(ID_BUTTON_LOADXML, &CDLGBuildingVisiableSurvey::OnBnClickedButtonLoadxml)
 	ON_CBN_SELCHANGE(IDC_COMBO_QUERY_TYPE, &CDLGBuildingVisiableSurvey::OnCbnSelchangeComboQueryType)
 	ON_BN_CLICKED(ID_BUTTON_DOSEARCH, &CDLGBuildingVisiableSurvey::OnBnClickedButtonDosearch)
+	ON_NOTIFY(NM_CLICK, IDC_LIST_QUERY_ITEM, &CDLGBuildingVisiableSurvey::OnNMClickListQueryItem)
 END_MESSAGE_MAP()
 
 
@@ -149,25 +152,26 @@ void CDLGBuildingVisiableSurvey::OnCbnSelchangeComboQueryType()
 {
 	// TODO: Add your control notification handler code here
 	USES_CONVERSION;
-	mComQueryObj.ResetContent();
-	
+	mWndList_item.DeleteAllItems();
+	mWndList.DeleteAllItems();
 	CString s;
 	mComQueryType.GetLBText(mComQueryType.GetCurSel(),s);
 	if (s.CompareNoCase(_T("观察点")) == 0)
 	{
+		
 		for (int i = 0;i<m_vecAllObservePt.size();++i)
 		{
-			mComQueryObj.AddString(m_vecAllObservePt[i]);
+			int n = mWndList_item.GetItemCount();
+			mWndList_item.InsertItem(n, m_vecAllObservePt[i]);
 		}
-		mComQueryObj.SetCurSel(0);
 	}
 	else if(s.CompareNoCase(_T("建筑")) == 0)
 	{
 		for (int i = 0;i<m_vecAllBuilding.size();++i)
 		{
-			mComQueryObj.AddString(m_vecAllBuilding[i]);
+			int n = mWndList_item.GetItemCount();
+			mWndList_item.InsertItem(n, m_vecAllBuilding[i]);
 		}
-		mComQueryObj.SetCurSel(0);
 	}
 }
 
@@ -175,27 +179,6 @@ void CDLGBuildingVisiableSurvey::OnCbnSelchangeComboQueryType()
 void CDLGBuildingVisiableSurvey::OnBnClickedButtonDosearch()
 {
 	// TODO: Add your control notification handler code here
-	CString sType,sObj;
-	mComQueryType.GetLBText(mComQueryType.GetCurSel(),sType);
-	mComQueryObj.GetLBText(mComQueryObj.GetCurSel(),sObj);
-	if (sType.IsEmpty() ||sObj.IsEmpty())
-	{
-		return;
-	}
-	if (sType.CompareNoCase(_T("观察点")) == 0)
-	{
-		doSearch(sObj,mXmlFile,0);
-	}
-	else if (sType.CompareNoCase(_T("建筑")) == 0)
-	{
-		doSearch(sObj,mXmlFile,1);
-	}
-	//绘制查询结果
-	if (g_mBuildingVisiableSurveyHandler)
-	{
-		g_mBuildingVisiableSurveyHandler->reDrawLines(mPtToMultiPt.pt,mPtToMultiPt.vecMultiPt,mVecObservePt);
-		
-	}
 }
 
 void CDLGBuildingVisiableSurvey::doSearch(CString sObj,CString sXml,int queryType)
@@ -239,7 +222,7 @@ void CDLGBuildingVisiableSurvey::doSearch(CString sObj,CString sXml,int queryTyp
 							z_build = atof((node1->first_node("BUILDING_Z"))->value());
 							mPtToMultiPt.vecMultiPt.push_back(osg::Vec3d(x_build,y_build,z_build));
 							int n = mWndList.GetItemCount();
-							mWndList.InsertItem(0, CString(node2->value()));
+							mWndList.InsertItem(n, CString(node2->value()));
 						}
 						node1 = node1->next_sibling();
 					}
@@ -277,7 +260,7 @@ void CDLGBuildingVisiableSurvey::doSearch(CString sObj,CString sXml,int queryTyp
 							z_observe = atof((node->first_node("Z"))->value());
 							mPtToMultiPt.vecMultiPt.push_back(osg::Vec3d(x_observe,y_observe,z_observe));
 							int n = mWndList.GetItemCount();
-							mWndList.InsertItem(0, CString(nameNode->value()));
+							mWndList.InsertItem(n, CString(nameNode->value()));
 							break;
 						}
 					}
@@ -298,6 +281,7 @@ BOOL CDLGBuildingVisiableSurvey::OnInitDialog()
 	// TODO:  Add extra initialization here
 	//初始化列表控件
 	mWndList.InsertColumn (0, _T("字段名"), LVCFMT_LEFT, 200);
+	mWndList_item.InsertColumn (0, _T("字段名"), LVCFMT_LEFT, 200);
 	//根据默认图层检测对应xml数据文件
 	std::string xmlFile = W2A(mDefLayer);
 	xmlFile = xmlFile.substr(0,xmlFile.size() - 3) + "xml";
@@ -309,4 +293,45 @@ BOOL CDLGBuildingVisiableSurvey::OnInitDialog()
 	}
 	return TRUE;  // return TRUE unless you set the focus to a control
 	// EXCEPTION: OCX Property Pages should return FALSE
+}
+
+
+void CDLGBuildingVisiableSurvey::OnNMClickListQueryItem(NMHDR *pNMHDR, LRESULT *pResult)
+{
+	LPNMITEMACTIVATE pNMItemActivate = reinterpret_cast<LPNMITEMACTIVATE>(pNMHDR);
+	// TODO: Add your control notification handler code here
+	int nItem = mWndList_item.GetSelectionMark();
+	if (nItem >= 0)
+	{
+		CWaitCursor waitCursor; 
+		CString sObj = mWndList_item.GetItemText(nItem, 0);
+		CString sType;
+		mComQueryType.GetLBText(mComQueryType.GetCurSel(),sType);
+		if (sType.IsEmpty() ||sObj.IsEmpty())
+		{
+			EndWaitCursor();
+			return;
+		}
+		if (sType.CompareNoCase(_T("观察点")) == 0)
+		{
+			doSearch(sObj,mXmlFile,0);
+		}
+		else if (sType.CompareNoCase(_T("建筑")) == 0)
+		{
+			doSearch(sObj,mXmlFile,1);
+		}
+		//绘制查询结果
+		if (g_mBuildingVisiableSurveyHandler)
+		{
+			g_mBuildingVisiableSurveyHandler->reDrawLines(mPtToMultiPt.pt,mPtToMultiPt.vecMultiPt,mVecObservePt);
+		}
+	}
+	*pResult = 0;
+}
+
+
+BOOL CDLGBuildingVisiableSurvey::PreTranslateMessage(MSG* pMsg)
+{
+	// TODO: Add your specialized code here and/or call the base class
+	return CDialogEx::PreTranslateMessage(pMsg);
 }

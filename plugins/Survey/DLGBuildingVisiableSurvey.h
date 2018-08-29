@@ -65,4 +65,10 @@ protected:
 	CString mXmlFile;
 	//控制初始化时加载xml文件
 	bool mbNoXml;
+
+	bool isBusy;
+public:
+	CListCtrl mWndList_item;
+	afx_msg void OnNMClickListQueryItem(NMHDR *pNMHDR, LRESULT *pResult);
+	virtual BOOL PreTranslateMessage(MSG* pMsg);
 };
